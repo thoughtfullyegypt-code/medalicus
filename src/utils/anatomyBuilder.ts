@@ -301,120 +301,119 @@ export function buildCoronaryAnatomy(): BuiltAnatomy {
   // -------------------------------------------------------------
   // 4. ANATOMICALLY DETAILED THORACIC VERTEBRAE (T1 - T10)
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
+  // 4. ANATOMICALLY CALIBRATED THORACIC SPINE (T1 - T12)
+  // Positioned strictly in posterior mediastinum behind cardiac silhouette
+  // -------------------------------------------------------------
   const spineGroup = new THREE.Group();
   spineGroup.name = 'ThoracicVertebralColumn';
 
   const boneMat = new THREE.MeshStandardMaterial({
-    color: 0xe2e8f0,
-    roughness: 0.75,
-    metalness: 0.05,
+    color: 0xcfd8dc,
+    roughness: 0.55,
+    metalness: 0.08,
     transparent: true,
-    opacity: 0.35
+    opacity: 0.25,
+    depthWrite: false
   });
 
   const discMat = new THREE.MeshStandardMaterial({
-    color: 0x94a3b8,
-    roughness: 0.9,
+    color: 0x90a4ae,
+    roughness: 0.8,
     transparent: true,
-    opacity: 0.28
+    opacity: 0.18,
+    depthWrite: false
   });
 
-  for (let i = 0; i < 9; i++) {
+  // 12 thoracic vertebrae with physiological kyphosis
+  for (let i = 0; i < 11; i++) {
     const vertGroup = new THREE.Group();
-    const yPos = 2.4 - i * 0.65;
-    const sizeScale = 0.9 + i * 0.04;
+    const norm = i / 10;
+    const yPos = 3.0 - i * 0.56;
+    const kyphosisZ = -2.55 - Math.sin(norm * Math.PI) * 0.28;
+    const sizeScale = 0.85 + i * 0.035;
 
+    // Vertebral Body
     const bodyGeo = new THREE.CylinderGeometry(
-      0.58 * sizeScale,
-      0.62 * sizeScale,
-      0.45 * sizeScale,
-      20
+      0.48 * sizeScale,
+      0.52 * sizeScale,
+      0.38 * sizeScale,
+      18
     );
-    bodyGeo.scale(1.15, 1.0, 0.85);
+    bodyGeo.scale(1.2, 1.0, 0.85);
     const bodyMeshPiece = new THREE.Mesh(bodyGeo, boneMat);
-    bodyMeshPiece.position.set(-0.2, 0, 0);
     vertGroup.add(bodyMeshPiece);
 
-    if (i < 8) {
+    // Intervertebral Disc
+    if (i < 10) {
       const discGeo = new THREE.CylinderGeometry(
-        0.56 * sizeScale,
-        0.58 * sizeScale,
-        0.14 * sizeScale,
-        18
+        0.47 * sizeScale,
+        0.49 * sizeScale,
+        0.12 * sizeScale,
+        16
       );
-      discGeo.scale(1.12, 1.0, 0.82);
+      discGeo.scale(1.18, 1.0, 0.83);
       const discMesh = new THREE.Mesh(discGeo, discMat);
-      discMesh.position.set(-0.2, -0.32 * sizeScale, 0);
+      discMesh.position.set(0, -0.24 * sizeScale, 0);
       vertGroup.add(discMesh);
     }
 
-    [-1, 1].forEach(side => {
-      const pedicleGeo = new THREE.CylinderGeometry(
-        0.13 * sizeScale,
-        0.14 * sizeScale,
-        0.35 * sizeScale,
-        10
-      );
-      pedicleGeo.rotateX(Math.PI / 2);
-      const pedicleMesh = new THREE.Mesh(pedicleGeo, boneMat);
-      pedicleMesh.position.set(-0.2 + side * 0.36 * sizeScale, 0.08 * sizeScale, -0.38 * sizeScale);
-      vertGroup.add(pedicleMesh);
-
-      const tpCurve = new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-0.2 + side * 0.36 * sizeScale, 0.08 * sizeScale, -0.38 * sizeScale),
-        new THREE.Vector3(-0.2 + side * 0.75 * sizeScale, 0.12 * sizeScale, -0.65 * sizeScale),
-        new THREE.Vector3(-0.2 + side * 1.05 * sizeScale, 0.15 * sizeScale, -0.75 * sizeScale)
-      ]);
-      vertGroup.add(new THREE.Mesh(new THREE.TubeGeometry(tpCurve, 8, 0.1 * sizeScale, 8, false), boneMat));
-    });
-
-    const spineProcessCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-0.2, 0.08 * sizeScale, -0.45 * sizeScale),
-      new THREE.Vector3(-0.2, -0.15 * sizeScale, -0.85 * sizeScale),
-      new THREE.Vector3(-0.2, -0.55 * sizeScale, -1.25 * sizeScale)
+    // Posterior spinous process pointing posteriorly and downward
+    const spinousCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0, 0.05 * sizeScale, -0.35 * sizeScale),
+      new THREE.Vector3(0, -0.15 * sizeScale, -0.75 * sizeScale),
+      new THREE.Vector3(0, -0.45 * sizeScale, -1.05 * sizeScale)
     ]);
-    vertGroup.add(new THREE.Mesh(new THREE.TubeGeometry(spineProcessCurve, 12, 0.11 * sizeScale, 8, false), boneMat));
+    const spinousGeo = new THREE.TubeGeometry(spinousCurve, 8, 0.065 * sizeScale, 8, false);
+    vertGroup.add(new THREE.Mesh(spinousGeo, boneMat));
 
-    vertGroup.position.set(0.0, yPos, -1.9);
+    vertGroup.position.set(0.0, yPos, kyphosisZ);
     spineGroup.add(vertGroup);
   }
   rootGroup.add(spineGroup);
 
   // -------------------------------------------------------------
-  // 5. STERNUM & ARTICULATED THORACIC RIBCAGE
+  // 5. ANATOMICALLY CONTOURED SLENDER COSTAL RIBCAGE (Ribs 1 - 10)
+  // Slender flattened ribbon arcs following true anatomical thoracic slope
   // -------------------------------------------------------------
   const sternumGroup = new THREE.Group();
   sternumGroup.name = 'Sternum';
 
   const sternumCurve = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0.0, 2.5, 1.8),
-    new THREE.Vector3(0.0, 1.7, 1.95),
-    new THREE.Vector3(0.0, 0.8, 1.9),
-    new THREE.Vector3(0.0, -0.2, 1.7),
-    new THREE.Vector3(0.0, -0.7, 1.55)
+    new THREE.Vector3(0.0, 2.8, 1.85),  // Jugular notch / manubrium
+    new THREE.Vector3(0.0, 2.1, 2.05),  // Sternal angle of Louis
+    new THREE.Vector3(0.0, 1.1, 2.0),   // Mid-gladiolus
+    new THREE.Vector3(0.0, 0.1, 1.8),   // Lower body
+    new THREE.Vector3(0.0, -0.5, 1.6)   // Xiphoid process
   ]);
-  const sternumGeo = new THREE.TubeGeometry(sternumCurve, 20, 0.16, 12, false);
-  sternumGeo.scale(1.8, 1.0, 0.6);
+  const sternumGeo = new THREE.TubeGeometry(sternumCurve, 24, 0.12, 10, false);
+  sternumGeo.scale(2.2, 1.0, 0.4); // Flat anatomical sternal plate
   sternumGroup.add(new THREE.Mesh(sternumGeo, boneMat));
   rootGroup.add(sternumGroup);
 
   const ribsGroup = new THREE.Group();
   ribsGroup.name = 'ThoracicRibs';
 
-  for (let i = 0; i < 7; i++) {
-    const yPosterior = 2.3 - i * 0.62;
-    const yAnterior = 1.8 - i * 0.48;
-    const lateralExpansion = 2.4 + Math.sin((i / 6) * Math.PI) * 0.6;
+  // 10 pairs of anatomically sloped costal ribs
+  for (let i = 0; i < 9; i++) {
+    const frac = i / 8;
+    const yPosterior = 2.8 - i * 0.52;
+    const yAnterior = 2.1 - i * 0.42;
+    // Lateral thoracic excursion: narrower at top, broadest around ribs 6-8
+    const latWidth = 2.2 + Math.sin(frac * Math.PI) * 1.1;
 
     [-1, 1].forEach(side => {
       const ribCurve = new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-0.2 + side * 0.4, yPosterior, -1.85),
-        new THREE.Vector3(side * (lateralExpansion * 0.7), yPosterior - 0.15, -1.4),
-        new THREE.Vector3(side * lateralExpansion, yPosterior - 0.35, 0.1),
-        new THREE.Vector3(side * (lateralExpansion * 0.7), yAnterior - 0.2, 1.35),
-        new THREE.Vector3(side * 0.25, yAnterior, 1.85)
+        new THREE.Vector3(side * 0.48, yPosterior, -2.5),                       // Costovertebral takeoff
+        new THREE.Vector3(side * (latWidth * 0.65), yPosterior - 0.22, -2.0),   // Posterior rib neck
+        new THREE.Vector3(side * latWidth, yPosterior - 0.55, -0.2),            // Lateral mid-axillary line
+        new THREE.Vector3(side * (latWidth * 0.75), yAnterior - 0.35, 1.45),    // Anterolateral costal margin
+        new THREE.Vector3(side * 0.35, yAnterior, 1.95)                         // Costochondral sternal junction
       ]);
-      ribsGroup.add(new THREE.Mesh(new THREE.TubeGeometry(ribCurve, 28, 0.07, 8, false), boneMat));
+      // Slender ribbon cross-section (flat, slender cortical bone)
+      const ribTube = new THREE.TubeGeometry(ribCurve, 32, 0.042, 8, false);
+      ribTube.scale(1.0, 1.35, 0.7); // Anteroposterior flattening
+      ribsGroup.add(new THREE.Mesh(ribTube, boneMat));
     });
   }
   rootGroup.add(ribsGroup);

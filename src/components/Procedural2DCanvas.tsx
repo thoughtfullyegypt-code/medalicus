@@ -403,44 +403,39 @@ function drawProceduralScan(
         ctx.fillRect(nx, ny, 2, 2);
       }
 
-      // 2. Anatomical Thoracic Bone Shadows (Spine with Pedicle Eyes & Rib Arcs)
+      // 2. Realistic Medical Fluoroscopy Background (Image Intensifier / Flat-Panel Detector)
       ctx.save();
-      ctx.fillStyle = 'rgba(100, 116, 139, 0.22)';
-      ctx.fillRect(cx - 55, 0, 110, h); // Thoracic vertebral column
+      
+      // Soft peripheral radiological density vignette
+      const detectorVignette = ctx.createRadialGradient(cx, cy, Math.min(w, h) * 0.35, cx, cy, Math.max(w, h) * 0.75);
+      detectorVignette.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      detectorVignette.addColorStop(1, 'rgba(15, 23, 42, 0.35)');
+      ctx.fillStyle = detectorVignette;
+      ctx.fillRect(0, 0, w, h);
 
-      // Paired vertebral pedicle "eyes"
-      ctx.strokeStyle = 'rgba(71, 85, 105, 0.35)';
-      ctx.lineWidth = 3;
-      for (let y = 60; y < h; y += 80) {
-        ctx.strokeRect(cx - 45, y, 16, 24);
-        ctx.strokeRect(cx + 29, y, 16, 24);
-      }
-
-      // Rib arcs crossing the fluoroscopic field
-      ctx.strokeStyle = 'rgba(100, 116, 139, 0.16)';
-      ctx.lineWidth = 18;
-      for (let y = -40; y < h + 100; y += 95) {
-        ctx.beginPath();
-        ctx.moveTo(cx - 260, y + 80);
-        ctx.quadraticCurveTo(cx, y + 30, cx + 280, y + 70);
-        ctx.stroke();
-      }
-
-      // Diaphragm Dome in lower field
-      ctx.fillStyle = 'rgba(71, 85, 105, 0.28)';
+      // Faint physiological diaphragmatic dome in lower field
+      const diaGradient = ctx.createLinearGradient(0, h - 120, 0, h);
+      diaGradient.addColorStop(0, 'rgba(30, 41, 59, 0)');
+      diaGradient.addColorStop(0.3, 'rgba(30, 41, 59, 0.18)');
+      diaGradient.addColorStop(1, 'rgba(15, 23, 42, 0.42)');
+      ctx.fillStyle = diaGradient;
       ctx.beginPath();
       ctx.moveTo(0, h);
-      ctx.quadraticCurveTo(cx + 80, h - 140, w, h - 70);
+      ctx.quadraticCurveTo(cx + 60, h - 130, w, h - 50);
       ctx.lineTo(w, h);
       ctx.closePath();
       ctx.fill();
 
-      // Pulsating Left Ventricular Cardiac Shadow (Beating Myocardial Mass)
+      // Subtle, faint cardiac silhouette density (soft tissue shadow without harsh outlines)
       const cardiacCycle = Math.sin(t * 3.8); // ~72 bpm
-      const heartScale = 1.0 + cardiacCycle * 0.045;
-      ctx.fillStyle = 'rgba(71, 85, 105, 0.15)';
+      const heartScale = 1.0 + cardiacCycle * 0.035;
+      const cardiacShadow = ctx.createRadialGradient(cx - 15, cy + 35, 10, cx - 15, cy + 35, 160 * heartScale);
+      cardiacShadow.addColorStop(0, 'rgba(30, 41, 59, 0.14)');
+      cardiacShadow.addColorStop(0.7, 'rgba(30, 41, 59, 0.06)');
+      cardiacShadow.addColorStop(1, 'rgba(30, 41, 59, 0)');
+      ctx.fillStyle = cardiacShadow;
       ctx.beginPath();
-      ctx.ellipse(cx - 20, cy + 30, 140 * heartScale, 170 * heartScale, -0.35, 0, Math.PI * 2);
+      ctx.ellipse(cx - 15, cy + 35, 140 * heartScale, 165 * heartScale, -0.32, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
 

@@ -47,7 +47,7 @@ const SYSTEM_CONFIGS: Record<OrganSystemId, SystemConfig> = {
       { key: 'surfaceLandmarks', label: 'Surface ICS Marks', defaultOn: true },
       { key: 'heartChambers', label: 'Heart Mass', defaultOn: true },
       { key: 'aorta', label: 'Aorta & Pulm', defaultOn: true },
-      { key: 'ribsAndSpine', label: 'Spine & Ribs', defaultOn: true },
+      { key: 'ribsAndSpine', label: 'Spine & Ribs', defaultOn: false },
       { key: 'beamCone', label: 'X-Ray Beam', defaultOn: true },
       { key: 'catheter', label: 'Catheter', defaultOn: true }
     ],

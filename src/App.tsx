@@ -57,7 +57,7 @@ export function App() {
     heartChambers: true,
     heartOpacity: 38,
     aorta: true,
-    ribsAndSpine: true,
+    ribsAndSpine: false,
     beamCone: true,
     vesselLabels: true,
     catheter: true

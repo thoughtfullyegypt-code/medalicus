@@ -35,6 +35,18 @@ const SYSTEM_CAMERA_FRAMES: Record<OrganSystemId, { target: [number, number, num
   ophthalmology_ent: { target: [0, 0, 0], radius: 4.5, phi: 1.25, theta: 0.25 }
 };
 
+function checkWebGLSupport(): boolean {
+  try {
+    const canvas = document.createElement('canvas');
+    return Boolean(
+      window.WebGLRenderingContext && 
+      (canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+    );
+  } catch (e) {
+    return false;
+  }
+}
+
 export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
   systemId = 'cardiovascular',
   angles,
@@ -51,6 +63,7 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
   cameraPresetTrigger
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [webglAvailable, setWebglAvailable] = useState(true);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -90,6 +103,10 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
 
   // 1. Initialize Three.js scene & renderer
   useEffect(() => {
+    if (!checkWebGLSupport()) {
+      setWebglAvailable(false);
+      return;
+    }
     if (!containerRef.current) return;
     const width = Math.max(containerRef.current.clientWidth, 320);
     const height = Math.max(containerRef.current.clientHeight, 240);
@@ -618,6 +635,29 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
     }
     onSelectVessel(null);
   };
+
+  if (!webglAvailable) {
+    return (
+      <div className="relative w-full h-full flex flex-col items-center justify-center p-6 bg-[#0a0f18] text-center select-none">
+        <div className="bg-[#0f1724] border border-amber-500/40 rounded-2xl p-6 max-w-md shadow-2xl space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mx-auto">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <h3 className="text-sm font-bold text-slate-100">WebGL Acceleration Unavailable</h3>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Your browser or device environment does not currently have WebGL graphics enabled.
+          </p>
+          <div className="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-left text-[11px] text-slate-300 space-y-1">
+            <div className="font-semibold text-teal-400">Recommended Steps:</div>
+            <ul className="list-disc list-inside space-y-0.5 text-slate-400">
+              <li>Enable "Hardware Acceleration" in your browser settings.</li>
+              <li>Try opening the link in Google Chrome, Apple Safari, or Microsoft Edge.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
