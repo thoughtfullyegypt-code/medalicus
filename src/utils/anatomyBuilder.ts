@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { CORONARY_VESSELS } from '../data/coronaryData';
+import { REAL_BODYPARTS3D_VESSELS, BodyParts3DVessel } from '../data/bodyparts3dCoronary';
 import { VesselDefinition, ProbeOrientation } from '../types';
 
 export interface BuiltAnatomy {
@@ -23,6 +24,8 @@ export interface BuiltAnatomy {
   catheterMesh: THREE.Group;
   probeGroup: THREE.Group;
   probeBeamMesh: THREE.Mesh;
+  echoCutPlaneGroup?: THREE.Group;
+  updateEchoCutPlane?: (presetId: string) => void;
 }
 
 /**
@@ -432,17 +435,20 @@ export function buildCoronaryAnatomy(): BuiltAnatomy {
   rootGroup.add(diaphragmMesh);
 
   // -------------------------------------------------------------
-  // 7. CORONARY ARTERY TREE WITH LESIONS & STENOSES
+  // 7. AUTHENTIC BODYPARTS3D CORONARY ARTERY TREE (CC BY 4.0)
   // -------------------------------------------------------------
   const vesselMeshes = new Map<string, THREE.Mesh>();
   const vesselsGroup = new THREE.Group();
-  vesselsGroup.name = 'CoronaryArteryTree';
+  vesselsGroup.name = 'BodyParts3DCoronaryTree';
 
-  CORONARY_VESSELS.forEach((def: VesselDefinition) => {
+  // Build authentic clinical vessels from BodyParts3D 4.0 dataset
+  REAL_BODYPARTS3D_VESSELS.forEach((def: BodyParts3DVessel) => {
+    if (!def.points || def.points.length < 2) return;
     const vecPoints = def.points.map(p => new THREE.Vector3(p[0], p[1], p[2]));
     const curve = new THREE.CatmullRomCurve3(vecPoints);
-    const segments = Math.max(14, vecPoints.length * 10);
-    const tubeGeo = new THREE.TubeGeometry(curve, segments, def.radius, 14, false);
+    const segments = Math.max(12, Math.min(120, vecPoints.length * 2));
+    const safeRadius = Math.max(0.035, Math.min(0.20, def.radius));
+    const tubeGeo = new THREE.TubeGeometry(curve, segments, safeRadius, 10, false);
 
     const tubeMat = new THREE.MeshStandardMaterial({
       color: new THREE.Color(def.color),
@@ -460,11 +466,30 @@ export function buildCoronaryAnatomy(): BuiltAnatomy {
       abbr: def.abbr,
       system: def.system,
       defaultColor: def.color,
-      defaultRadius: def.radius
+      defaultRadius: safeRadius,
+      syntaxSegments: def.segments,
+      source: 'BodyParts3D 4.0 (DBCLS)'
     };
 
     vesselMeshes.set(def.id, mesh);
     vesselsGroup.add(mesh);
+
+    // Map common clinical alias IDs for case challenges & quiz compatibility
+    if (def.id === 'lm') vesselMeshes.set('lmca', mesh);
+    if (def.id === 'lad') {
+      vesselMeshes.set('lad-prox', mesh);
+      vesselMeshes.set('lad-mid', mesh);
+      vesselMeshes.set('lad-distal', mesh);
+    }
+    if (def.id === 'lcx') {
+      vesselMeshes.set('lcx-prox', mesh);
+      vesselMeshes.set('lcx-distal', mesh);
+    }
+    if (def.id === 'rca') {
+      vesselMeshes.set('rca-prox', mesh);
+      vesselMeshes.set('rca-mid', mesh);
+      vesselMeshes.set('rca-distal', mesh);
+    }
   });
 
   const stenosisGeo = new THREE.TorusGeometry(0.14, 0.045, 12, 20);
@@ -621,6 +646,64 @@ export function buildCoronaryAnatomy(): BuiltAnatomy {
   probeGroup.visible = false;
   rootGroup.add(probeGroup);
 
+  // -------------------------------------------------------------
+  // 11. ECHO ANATOMICAL CUT PLANES (PLAX, PSAX, A4C, SUBCOSTAL)
+  // Labeled clearly as: "Anatomical Cut Plane (Not Ultrasound)"
+  // -------------------------------------------------------------
+  const echoCutPlaneGroup = new THREE.Group();
+  echoCutPlaneGroup.name = 'EchoAnatomicalCutPlanes';
+
+  const cutPlaneGeo = new THREE.PlaneGeometry(5.4, 5.4);
+  const cutPlaneMat = new THREE.MeshStandardMaterial({
+    color: 0x06b6d4,
+    transparent: true,
+    opacity: 0.28,
+    side: THREE.DoubleSide,
+    roughness: 0.25,
+    metalness: 0.1,
+    depthWrite: false
+  });
+  const echoCutPlaneMesh = new THREE.Mesh(cutPlaneGeo, cutPlaneMat);
+  echoCutPlaneMesh.name = 'EchoCutPlaneMesh';
+
+  // Luminous outline border
+  const borderGeo = new THREE.EdgesGeometry(cutPlaneGeo);
+  const borderLine = new THREE.LineSegments(borderGeo, new THREE.LineBasicMaterial({ color: 0x38bdf8, linewidth: 2 }));
+  echoCutPlaneMesh.add(borderLine);
+
+  echoCutPlaneGroup.add(echoCutPlaneMesh);
+  echoCutPlaneGroup.visible = false;
+  rootGroup.add(echoCutPlaneGroup);
+
+  const updateEchoCutPlane = (presetId: string) => {
+    switch (presetId) {
+      case 'plax':
+        // Parasternal Long Axis: obliquely cuts along LV apex to aortic root
+        echoCutPlaneMesh.position.set(0.2, 0.4, 0.15);
+        echoCutPlaneMesh.rotation.set(0.35, 0.65, -0.4);
+        break;
+      case 'psax':
+        // Parasternal Short Axis: transverse cut perpendicular to long axis
+        echoCutPlaneMesh.position.set(0.1, 0.25, 0.3);
+        echoCutPlaneMesh.rotation.set(1.4, 0.2, 0.1);
+        break;
+      case 'a4c':
+        // Apical 4-Chamber: coronal-oblique cut slicing all 4 chambers
+        echoCutPlaneMesh.position.set(0.1, 0.35, 0.05);
+        echoCutPlaneMesh.rotation.set(0.1, -0.15, 0.0);
+        break;
+      case 'subcostal':
+        // Subcostal: low subxiphoid view cutting through inferior diaphragmatic surface
+        echoCutPlaneMesh.position.set(0.05, -0.2, 0.15);
+        echoCutPlaneMesh.rotation.set(-0.4, 0.1, 0.0);
+        break;
+      default:
+        echoCutPlaneMesh.position.set(0.2, 0.4, 0.15);
+        echoCutPlaneMesh.rotation.set(0.35, 0.65, -0.4);
+        break;
+    }
+  };
+
   return {
     rootGroup,
     bodyGroup,
@@ -641,7 +724,9 @@ export function buildCoronaryAnatomy(): BuiltAnatomy {
     beamMesh,
     catheterMesh: catheterGroup,
     probeGroup,
-    probeBeamMesh
+    probeBeamMesh,
+    echoCutPlaneGroup,
+    updateEchoCutPlane
   };
 }
 

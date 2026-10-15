@@ -368,38 +368,46 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
     carmGroup.rotation.x = -secRad;
   }, [angles]);
 
-  // 8. Handle Modality Switching (C-Arm vs. Ultrasound Probe)
+  // 8. Handle Modality Switching (C-Arm vs. Ultrasound Probe & Echo Cut Plane)
   useEffect(() => {
     if (!anatomyRef.current) return;
-    const { carmGroup, beamMesh, probeGroup } = anatomyRef.current;
+    const { carmGroup, beamMesh, probeGroup, echoCutPlaneGroup } = anatomyRef.current;
 
     if (modality === 'ultrasound') {
       if (carmGroup) carmGroup.visible = false;
       if (beamMesh) beamMesh.visible = false;
       if (probeGroup) probeGroup.visible = true;
+      if (echoCutPlaneGroup) echoCutPlaneGroup.visible = true;
     } else {
       if (carmGroup) carmGroup.visible = true;
       if (beamMesh) beamMesh.visible = layers.beamCone;
       if (probeGroup) probeGroup.visible = false;
+      if (echoCutPlaneGroup) echoCutPlaneGroup.visible = false;
     }
   }, [modality, layers.beamCone]);
 
-  // 9. Update Ultrasound Probe position & orientation
+  // 9. Update Ultrasound Probe position & Echo Anatomical Cut Plane
   useEffect(() => {
-    if (!anatomyRef.current?.probeGroup) return;
-    const { probeGroup } = anatomyRef.current;
+    if (!anatomyRef.current) return;
+    const { probeGroup, updateEchoCutPlane } = anatomyRef.current;
     const preset = PROBE_PRESETS.find(p => p.presetId === activeProbePreset) || PROBE_PRESETS[0];
 
-    probeGroup.position.set(
-      preset.chestPosition[0],
-      preset.chestPosition[1],
-      preset.chestPosition[2]
-    );
-    probeGroup.rotation.set(
-      preset.rotation[0],
-      preset.rotation[1],
-      preset.rotation[2]
-    );
+    if (probeGroup) {
+      probeGroup.position.set(
+        preset.chestPosition[0],
+        preset.chestPosition[1],
+        preset.chestPosition[2]
+      );
+      probeGroup.rotation.set(
+        preset.rotation[0],
+        preset.rotation[1],
+        preset.rotation[2]
+      );
+    }
+
+    if (updateEchoCutPlane) {
+      updateEchoCutPlane(activeProbePreset);
+    }
   }, [activeProbePreset]);
 
   // 10. Update Cardiovascular Layer Visibilities & Opacities
@@ -624,13 +632,21 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
       <div ref={containerRef} className="w-full h-full" />
 
       {/* Viewport Badge */}
-      <div className="absolute top-3 left-3 flex items-center space-x-2 bg-slate-900/85 backdrop-blur border border-slate-700/80 px-2.5 py-1 rounded-md pointer-events-none">
-        <div className={`w-2 h-2 rounded-full animate-ping ${modality === 'ultrasound' ? 'bg-cyan-400' : 'bg-teal-400'}`} />
-        <span className="text-xs font-semibold text-slate-200 uppercase tracking-wider font-mono">
-          {systemId === 'cardiovascular'
-            ? (modality === 'ultrasound' ? '3D Patient & Ultrasound Probe' : '3D Patient & C-Arm Observer')
-            : `3D Clinical Anatomy &bull; ${systemId.toUpperCase()}`}
-        </span>
+      <div className="absolute top-3 left-3 flex flex-col space-y-1 z-20 pointer-events-none">
+        <div className="flex items-center space-x-2 bg-slate-900/85 backdrop-blur border border-slate-700/80 px-2.5 py-1 rounded-md">
+          <div className={`w-2 h-2 rounded-full animate-ping ${modality === 'ultrasound' ? 'bg-cyan-400' : 'bg-teal-400'}`} />
+          <span className="text-xs font-semibold text-slate-200 uppercase tracking-wider font-mono">
+            {systemId === 'cardiovascular'
+              ? (modality === 'ultrasound' ? '3D Patient & Echo Teaching View' : '3D Patient & C-Arm Observer')
+              : `3D Clinical Anatomy • ${systemId.toUpperCase()}`}
+          </span>
+        </div>
+        {systemId === 'cardiovascular' && modality === 'ultrasound' && (
+          <div className="flex items-center space-x-1.5 bg-cyan-950/80 backdrop-blur border border-cyan-500/40 px-2 py-0.5 rounded text-[10px] text-cyan-300 font-mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+            <span>Anatomical Cut Plane ({activeProbePreset.toUpperCase()}) &bull; Not Ultrasound</span>
+          </div>
+        )}
       </div>
 
       {/* Orbit Helper Tip */}
