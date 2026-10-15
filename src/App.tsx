@@ -111,7 +111,7 @@ export function App() {
 
   // Modals & Drawers
   const [referenceOpen, setReferenceOpen] = useState(false);
-  const [controlsDrawerOpen, setControlsDrawerOpen] = useState(true);
+  const [controlsDrawerOpen, setControlsDrawerOpen] = useState(false);
 
   // Handle System Change
   const handleSelectSystem = (newSystemId: OrganSystemId) => {
@@ -219,7 +219,7 @@ export function App() {
   const currentProbe = PROBE_PRESETS.find(p => p.presetId === activeProbePreset) || PROBE_PRESETS[0];
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#080c14] text-slate-100 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen w-screen bg-[#f4f6f8] text-slate-800 overflow-hidden font-sans">
       {/* Top Navigation */}
       <Header
         systems={ORGAN_SYSTEMS}
@@ -245,6 +245,29 @@ export function App() {
         onShareDeepLink={handleShareDeepLink}
         shareCopied={shareCopied}
       />
+
+      {/* Focused workspace heading */}
+      <div className="shrink-0 bg-white border-b border-slate-200 px-5 md:px-8 py-3 flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.18em] font-semibold text-teal-700">MEDICAL IMAGING · INTERACTIVE ATLAS</p>
+          <h1 className="text-lg sm:text-xl font-semibold tracking-tight text-slate-900 leading-tight mt-0.5">
+            {activeSystemId === 'cardiovascular' ? 'Coronary anatomy' : `${ORGAN_SYSTEMS.find(s => s.id === activeSystemId)?.name || 'Anatomy'} explorer`}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 hidden sm:block">
+            {activeSystemId === 'cardiovascular' ? 'Explore the anatomy. Understand the projection.' : 'Explore anatomical structures in spatial context.'}
+          </p>
+        </div>
+        <div className="hidden md:flex items-center gap-3 shrink-0 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.12)]" />
+          <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500">Workspace</span>
+          <span className="h-5 w-px bg-slate-200" />
+          <span className="text-xs font-medium text-slate-700 tabular-nums">
+            {activeSystemId === 'cardiovascular'
+              ? `${angles.primary > 0 ? 'LAO' : angles.primary < 0 ? 'RAO' : 'AP'} ${Math.abs(angles.primary)}° · ${angles.secondary > 0 ? 'CRAN' : angles.secondary < 0 ? 'CAUD' : 'STRAIGHT'} ${Math.abs(angles.secondary)}°`
+              : `SLICE ${sliceIndex} / 100`}
+          </span>
+        </div>
+      </div>
 
       {/* Main Workspace */}
       <div className="flex-1 relative flex flex-col min-h-0 overflow-hidden">
@@ -289,17 +312,17 @@ export function App() {
         </div>
 
         {/* Collapsible Bottom Controls Drawer */}
-        <div className={`transition-all duration-300 ease-in-out border-t border-slate-800 bg-[#0d131c]/95 backdrop-blur-md z-20 ${
+        <div className={`transition-all duration-300 ease-in-out border-t border-slate-200 bg-white/95 backdrop-blur-md z-20 ${
           controlsDrawerOpen ? 'max-h-80' : 'max-h-9'
         }`}>
           {/* Drawer Handle */}
           <div 
             onClick={() => setControlsDrawerOpen(!controlsDrawerOpen)}
-            className="h-9 px-4 flex items-center justify-between cursor-pointer border-b border-slate-800/60 hover:bg-slate-800/40 select-none text-xs"
+            className="h-9 px-4 flex items-center justify-between cursor-pointer border-b border-slate-200 hover:bg-slate-50 select-none text-xs"
           >
             <div className="flex items-center space-x-2">
               <Sliders className="w-3.5 h-3.5 text-teal-400" />
-              <span className="font-semibold text-slate-200">
+              <span className="font-semibold text-slate-700">
                 {activeSystemId === 'cardiovascular'
                   ? (modality === 'fluoro' ? 'C-Arm Gantry & Anatomy Controls' : 'Ultrasound Probe Position & Echo Windows')
                   : `${activeSystemId.toUpperCase()} Multi-Planar Controls & Slice Scrubber`}
@@ -312,7 +335,7 @@ export function App() {
                   : `MPR SLICE: ${sliceIndex} / 100`}
               </span>
             </div>
-            <div className="flex items-center space-x-1 text-slate-400 hover:text-slate-200">
+            <div className="flex items-center space-x-1 text-slate-500 hover:text-slate-200">
               <span className="text-[10px] hidden sm:inline">{controlsDrawerOpen ? 'Collapse' : 'Expand Controls'}</span>
               {controlsDrawerOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
             </div>
