@@ -150,9 +150,10 @@ function buildSkeletonLayer(
 
   selectedSourceMeshes.forEach((sourceMesh) => {
     sourceMesh.updateWorldMatrix(true, false);
-    const boneMaterial = /costal cartilage/i.test(sourceMesh.name) ? cartilageMaterial : material;
+    const anatomicalName = String(sourceMesh.userData.anatomicalSourceName || sourceMesh.name || 'Anatomical bone');
+    const boneMaterial = /costal cartilage/i.test(anatomicalName) ? cartilageMaterial : material;
     const mesh = new THREE.Mesh(sourceMesh.geometry, boneMaterial);
-    mesh.name = String(sourceMesh.userData.anatomicalSourceName || sourceMesh.name || 'Anatomical bone');
+    mesh.name = anatomicalName;
     mesh.position.setFromMatrixPosition(sourceMesh.matrixWorld);
     mesh.quaternion.setFromRotationMatrix(sourceMesh.matrixWorld);
     mesh.scale.setFromMatrixScale(sourceMesh.matrixWorld);
@@ -164,9 +165,9 @@ function buildSkeletonLayer(
 
     // This atlas source only includes one side for many paired bones. Mirror
     // those explicitly labelled ".r" so the body is not visibly one-sided.
-    if (/\.r\.?$/i.test(sourceMesh.name)) {
+    if (/\.r\.?$/i.test(mesh.name)) {
       const left = new THREE.Mesh(sourceMesh.geometry, boneMaterial);
-      left.name = sourceMesh.name.trim().replace(/\.r\.?$/i, '.l');
+      left.name = mesh.name.trim().replace(/\.r\.?$/i, '.l');
       const mirroredMatrix = sourceMesh.matrixWorld.clone();
       mirroredMatrix.premultiply(new THREE.Matrix4().makeScale(-1, 1, 1));
       mirroredMatrix.decompose(left.position, left.quaternion, left.scale);
