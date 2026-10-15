@@ -81,7 +81,7 @@ export const DualViewport: React.FC<DualViewportProps> = ({
   searchPatternOpen,
   onToggleSearchPattern
 }) => {
-  const [layoutMode, setLayoutMode] = useState<'both' | 'anatomy' | 'clinical'>('both');
+  const [layoutMode, setLayoutMode] = useState<'both' | 'anatomy' | 'clinical'>('anatomy');
   const [showEchoLabels, setShowEchoLabels] = useState(true);
   
   // Search Pattern checklist state
@@ -107,10 +107,26 @@ export const DualViewport: React.FC<DualViewportProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col md:flex-row bg-[#080c14] overflow-hidden">
+    <div className="relative w-full h-full flex flex-col md:flex-row gap-3 md:gap-4 p-2 md:p-4 bg-[#f4f6f8] overflow-hidden">
+      {/* Persistent view switcher: one clean choice, without hiding core tools */}
+      <div className="absolute top-4 right-4 z-40 flex items-center gap-0.5 rounded-xl border border-slate-200 bg-white/95 p-1 shadow-lg backdrop-blur-md">
+        {([
+          { id: 'anatomy', label: '3D anatomy' },
+          { id: 'both', label: 'Compare' },
+          { id: 'clinical', label: 'Projection' }
+        ] as const).map(option => (
+          <button
+            key={option.id}
+            onClick={() => setLayoutMode(option.id)}
+            className={`rounded-lg px-2.5 py-1.5 text-[11px] sm:text-xs font-medium transition ${layoutMode === option.id ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'}`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
       {/* Viewport 1: 3D Patient, C-Arm / Probe / Multi-System 3D Observer */}
       {(layoutMode === 'both' || layoutMode === 'anatomy') && (
-        <div className={`relative ${layoutMode === 'both' ? 'w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-slate-800' : 'w-full h-full'}`}>
+        <div className={`relative ${layoutMode === 'both' ? 'w-full flex-1 min-h-0 md:flex-[1.55] md:min-w-0 border border-slate-200 bg-white rounded-2xl overflow-hidden shadow-sm' : 'w-full flex-1 min-h-0 border border-slate-200 bg-white rounded-2xl overflow-hidden shadow-sm'}`}>
           <AnatomyCanvas
             systemId={systemId}
             angles={angles}
@@ -126,10 +142,15 @@ export const DualViewport: React.FC<DualViewportProps> = ({
             alignTrigger={alignTrigger}
             sliceIndex={sliceIndex}
           />
+          <div className="pointer-events-none absolute top-4 left-4 z-20 max-w-[250px] rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-lg backdrop-blur-md">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-teal-700">SPATIAL ANATOMY</p>
+            <p className="mt-1 text-sm font-semibold text-slate-900">{systemId === 'cardiovascular' ? 'Explore the heart' : 'Explore the anatomy'}</p>
+            <p className="mt-1 text-[11px] leading-relaxed text-slate-500">Drag to rotate · scroll to zoom · select a structure</p>
+          </div>
           <button
             onClick={() => setLayoutMode(layoutMode === 'anatomy' ? 'both' : 'anatomy')}
             title={layoutMode === 'anatomy' ? 'Split View' : 'Maximize 3D Anatomy'}
-            className="absolute bottom-3 right-3 p-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700/80 transition shadow-lg"
+            className="absolute bottom-3 right-3 p-1.5 rounded-lg bg-white/95 hover:bg-slate-50 text-slate-600 border border-slate-200 transition shadow-lg"
           >
             {layoutMode === 'anatomy' ? <SplitSquareVertical className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
           </button>
@@ -138,7 +159,7 @@ export const DualViewport: React.FC<DualViewportProps> = ({
 
       {/* Viewport 2: Real-Time Diagnostic Output (Procedural 2D Multi-System PACS / Fluoro / Echo) */}
       {(layoutMode === 'both' || layoutMode === 'clinical') && (
-        <div className={`relative ${layoutMode === 'both' ? 'w-full md:w-1/2 h-1/2 md:h-full' : 'w-full h-full'}`}>
+        <div className={`relative ${layoutMode === 'both' ? 'w-full flex-1 min-h-0 md:flex-1 md:min-w-0 border border-slate-200 bg-white rounded-2xl overflow-hidden shadow-sm' : 'w-full flex-1 min-h-0 border border-slate-200 bg-white rounded-2xl overflow-hidden shadow-sm'}`}>
           {systemId === 'cardiovascular' && modality === 'ultrasound' && !comparisonMode && !presenterLaserActive ? (
             <UltrasoundCanvas
               activePresetId={activeProbePreset as any}
