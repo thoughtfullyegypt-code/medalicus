@@ -76,7 +76,7 @@ function getSemanticOrganId(name: string): string | null {
 }
 
 function displayName(name: string): string {
-  return name.replace(/__[A-Z]+\d+$/i, '').replaceAll('-', ' ').replaceAll('_', ' ').trim();
+  return name.replace(/__[A-Z]+\d+$/i, '').replace(/-/g, ' ').replace(/_/g, ' ').trim();
 }
 
 function createOrganMaterial(id: string): THREE.MeshStandardMaterial {
