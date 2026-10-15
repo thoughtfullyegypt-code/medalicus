@@ -4,7 +4,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Loader2, AlertTriangle, X } from 'lucide-react';
 import { GantryAngles, ImagingModality, OrganSystemId } from '../types';
 import { buildCoronaryAnatomy, calculateCarmVector, BuiltAnatomy } from '../utils/anatomyBuilder';
-import { buildSystem3D, System3DScene } from '../utils/proceduralSystemsBuilder';
+import { System3DScene } from '../utils/proceduralSystemsBuilder';
+import { buildRealSystem3D } from '../utils/realAnatomyBuilder';
 import { PROBE_PRESETS } from '../data/challengesData';
 import { LayerVisibility } from './LayerControls';
 
@@ -26,11 +27,11 @@ interface AnatomyCanvasProps {
 
 const SYSTEM_CAMERA_FRAMES: Record<OrganSystemId, { target: [number, number, number]; radius: number; phi: number; theta: number }> = {
   cardiovascular: { target: [0, 0.2, 0], radius: 8.5, phi: 1.1, theta: 0.4 },
-  neurology: { target: [0, 0.35, 0], radius: 6.2, phi: 1.2, theta: 0.4 },
-  pulmonology: { target: [0, 0.4, 0], radius: 7.6, phi: 1.15, theta: 0.35 },
-  gastroenterology: { target: [0, 0.25, 0], radius: 7.0, phi: 1.2, theta: 0.3 },
-  nephrology: { target: [0, -0.6, 0], radius: 7.8, phi: 1.15, theta: 0.35 },
-  musculoskeletal: { target: [0, 0, 0], radius: 5.2, phi: 1.25, theta: 0.45 },
+  neurology: { target: [0, 0, 0], radius: 9.0, phi: 1.2, theta: 0.4 },
+  pulmonology: { target: [0, 0, 0], radius: 9.0, phi: 1.15, theta: 0.35 },
+  gastroenterology: { target: [0, 0, 0], radius: 9.0, phi: 1.2, theta: 0.3 },
+  nephrology: { target: [0, 0, 0], radius: 9.0, phi: 1.15, theta: 0.35 },
+  musculoskeletal: { target: [0, 0, 0], radius: 9.0, phi: 1.25, theta: 0.45 },
   obstetrics: { target: [0.1, 0, 0], radius: 6.8, phi: 1.2, theta: 0.4 },
   ophthalmology_ent: { target: [0, 0, 0], radius: 4.5, phi: 1.25, theta: 0.25 }
 };
@@ -167,6 +168,9 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
 
   // 2. Re-build anatomy & adjust camera when systemId changes
   useEffect(() => {
+    let cancelled = false;
+    setModelError(null);
+    setModelLoading(null);
     const scene = sceneRef.current;
     if (!scene) return;
 
@@ -209,6 +213,7 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
       loader.load(
         heartUrl,
         (gltf) => {
+          if (cancelled) return;
           console.log(`[3D Loader] ✓ Successfully loaded and parsed ${heartUrl}`);
           setModelLoading(null);
           setModelError(null);
@@ -240,6 +245,7 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
           realisticHeartRef.current = heartModel;
         },
         (xhr) => {
+          if (cancelled) return;
           if (xhr.lengthComputable && xhr.total > 0) {
             const pct = Math.round((xhr.loaded / xhr.total) * 100);
             console.log(`[3D Loader] Loading heart.glb: ${pct}%`);
@@ -247,6 +253,7 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
           }
         },
         (err) => {
+          if (cancelled) return;
           console.error(`[3D Loader] ✗ Failed to load ${heartUrl}:`, err);
           setModelLoading(null);
           setModelError({
@@ -260,6 +267,7 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
       loader.load(
         bodyUrl,
         (gltf) => {
+          if (cancelled) return;
           console.log(`[3D Loader] ✓ Successfully loaded ${bodyUrl}`);
           const bodyModel = gltf.scene;
           bodyModel.name = 'RealisticBodyModel';
@@ -283,17 +291,31 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
           realisticBodyRef.current = bodyModel;
         },
         undefined,
-        (err) => console.log(`[3D Loader] human_body.glb procedural fallback:`, err)
+        (err) => { if (!cancelled) console.log(`[3D Loader] human_body.glb unavailable:`, err); }
       );
     } else {
-      // Build top-tier clinical procedural anatomy for all 7 other systems
-      const sys3D = buildSystem3D(systemId);
-      system3DRef.current = sys3D;
-      scene.add(sys3D.rootGroup);
-      if (sys3D.updateSlice) {
-        sys3D.updateSlice(sliceIndex);
-      }
+      setModelLoading({ active: true, label: 'Loading licensed 3D anatomy atlas', progress: 0 });
+      buildRealSystem3D(systemId).then((sys3D) => {
+        if (cancelled || sceneRef.current !== scene) {
+          return;
+        }
+        system3DRef.current = sys3D;
+        scene.add(sys3D.rootGroup);
+        setModelLoading(null);
+        setModelError(null);
+      }).catch((error: unknown) => {
+        if (cancelled) return;
+        console.error('[Real Anatomy] Failed to load atlas models:', error);
+        setModelLoading(null);
+        setModelError({
+          file: 'real anatomy atlas',
+          message: error instanceof Error
+            ? error.message
+            : 'The anatomical model could not be loaded. Check the network connection and model source availability.'
+        });
+      });
     }
+    return () => { cancelled = true; };
   }, [systemId]);
 
   // 3. Animation Loop
@@ -727,7 +749,7 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
             <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               <div className="text-[11px] font-bold text-amber-300">
-                Model Load Warning: <span className="font-mono text-amber-200">{modelError.file}</span>
+                {modelError.file === 'real anatomy atlas' ? 'Real Anatomy Model Unavailable' : 'Model Load Warning'}: <span className="font-mono text-amber-200">{modelError.file}</span>
               </div>
               <div className="text-[10px] text-amber-200/90 leading-tight">
                 {modelError.message}
