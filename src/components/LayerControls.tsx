@@ -148,19 +148,17 @@ const SYSTEM_CONFIGS: Record<OrganSystemId, SystemConfig> = {
     ]
   },
   ophthalmology_ent: {
-    title: 'Ocular Anatomy & OCT Scan Controls',
-    bodyLabel: 'Orbital Soft Tissue Envelope',
-    organLabel: 'Globe / Sclera Opacity',
+    title: 'Human Reference Atlas Eye Model',
+    bodyLabel: 'Body Skin (not in this model)',
+    organLabel: 'Eye Structure Opacity',
     layers: [
-      { key: 'primary', label: 'Eyeball, Lens & Retina', defaultOn: true },
-      { key: 'orbit', label: 'Bony Orbital Rim', defaultOn: true },
-      { key: 'slicingPlane', label: 'OCT Linear Scan Plane', defaultOn: true }
+      { key: 'primary', label: 'Eye Structures (Real 3D Atlas)', defaultOn: true }
     ],
     presets: [
-      { label: 'En-Face Fundus', preset: 'coronal' },
-      { label: 'Axial OCT', preset: 'axial' },
-      { label: 'Sagittal Globe', preset: 'sagittal' },
-      { label: '3D Orbit', preset: '3d' }
+      { label: 'Front View', preset: 'coronal' },
+      { label: 'Axial View', preset: 'axial' },
+      { label: 'Side View', preset: 'sagittal' },
+      { label: '3D Eye', preset: '3d' }
     ]
   }
 };
@@ -180,6 +178,7 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
   onAlignToBeamAxis
 }) => {
   const isCardio = systemId === 'cardiovascular';
+  const isEyeAtlas = systemId === 'ophthalmology_ent';
   const config = SYSTEM_CONFIGS[systemId] || SYSTEM_CONFIGS.cardiovascular;
 
   const currentSkinOpacity = bodySkinOpacity !== undefined 
@@ -251,7 +250,7 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
       </div>
 
       {/* Surface Anatomy (Body Skin) Slider */}
-      <div className="bg-slate-900/70 p-2 rounded-lg border border-slate-800 space-y-1.5">
+      {!isEyeAtlas && <div className="bg-slate-900/70 p-2 rounded-lg border border-slate-800 space-y-1.5">
         <div className="flex justify-between items-center text-[11px]">
           <span className="flex items-center space-x-1 text-slate-300 font-medium truncate">
             <User className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
@@ -275,7 +274,7 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
           <span>Translucent</span>
           <span>95% (Opaque Skin)</span>
         </div>
-      </div>
+      </div>}
 
       {/* Dynamic Layer Toggles for the active system */}
       <div className="grid grid-cols-2 gap-1.5">
