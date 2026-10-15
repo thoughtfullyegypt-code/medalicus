@@ -11,6 +11,10 @@ import type { System3DScene } from './proceduralSystemsBuilder';
  */
 const SOURCE_COMMIT = 'e4d76fbb424d15e1364963528a082a78fa359161';
 const SOURCE_ROOT = `https://raw.githubusercontent.com/yamz8/human-body-simulator/${SOURCE_COMMIT}/public`;
+const EYE_COMMIT = 'f8e64d76e08aa4bbae91cd86cd4ec13e2ad5a10c';
+const EYE_ROOT = `https://raw.githubusercontent.com/huahbo/ocularium/${EYE_COMMIT}/public`;
+const EYE_MODEL_URL = `${EYE_ROOT}/models/eye-anatomy.glb`;
+const EYE_DRACO_PATH = `${EYE_ROOT}/models/draco/`;
 const MODEL_URLS = {
   organs: `${SOURCE_ROOT}/models/anatomy-organs.glb`,
   skin: `${SOURCE_ROOT}/models/anatomy-skin.glb`,
@@ -24,13 +28,14 @@ const BODY_HEIGHT = 6.717;
 type LoadedGLTF = Awaited<ReturnType<GLTFLoader['loadAsync']>>;
 const gltfCache = new Map<string, Promise<LoadedGLTF>>();
 
-function loadAsset(url: string): Promise<LoadedGLTF> {
-  let cached = gltfCache.get(url);
+function loadAsset(url: string, decoderPath = DRACO_PATH): Promise<LoadedGLTF> {
+  const cacheKey = `${url}|${decoderPath}`;
+  let cached = gltfCache.get(cacheKey);
   if (!cached) {
-    const draco = new DRACOLoader().setDecoderPath(DRACO_PATH);
+    const draco = new DRACOLoader().setDecoderPath(decoderPath);
     const loader = new GLTFLoader().setDRACOLoader(draco);
     cached = loader.loadAsync(url).finally(() => draco.dispose());
-    gltfCache.set(url, cached);
+    gltfCache.set(cacheKey, cached);
   }
   return cached;
 }
@@ -182,6 +187,45 @@ function buildSkeletonLayer(
  * an appropriate source model throw instead of silently drawing fake organs.
  */
 export async function buildRealSystem3D(systemId: OrganSystemId): Promise<System3DScene> {
+  if (systemId === 'ophthalmology_ent') {
+    const gltf = await loadAsset(EYE_MODEL_URL, EYE_DRACO_PATH);
+    const rootGroup = new THREE.Group();
+    rootGroup.name = 'RealHRAEyeAtlas';
+    const grid = new THREE.GridHelper(8, 16, 0x1e293b, 0x0f172a);
+    grid.position.y = -2.2;
+    rootGroup.add(grid);
+
+    const eyeModel = gltf.scene.clone(true);
+    eyeModel.name = 'Human Reference Atlas Eye — 23 labeled structures';
+    eyeModel.updateMatrixWorld(true);
+    const bounds = new THREE.Box3().setFromObject(eyeModel);
+    const size = bounds.getSize(new THREE.Vector3());
+    const center = bounds.getCenter(new THREE.Vector3());
+    const scale = 3.8 / Math.max(size.x, size.y, size.z, 0.001);
+    eyeModel.scale.setScalar(scale);
+    eyeModel.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+    const interactiveMeshes = new Map<string, THREE.Mesh>();
+    const layerGroups = new Map<string, THREE.Object3D>();
+    const organMeshes: THREE.Mesh[] = [];
+    eyeModel.traverse((object) => {
+      if (!(object as THREE.Mesh).isMesh) return;
+      const mesh = object as THREE.Mesh;
+      mesh.name = mesh.name || 'Eye anatomical structure';
+      mesh.userData.name = displayName(mesh.name.replace(/^VH_M_/i, ''));
+      mesh.userData.defaultColor = '#c9877b';
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      const cloned = materials.map((material) => material.clone());
+      mesh.material = Array.isArray(mesh.material) ? cloned : cloned[0];
+      organMeshes.push(mesh);
+      interactiveMeshes.set(`eye:${mesh.name}`, mesh);
+    });
+    rootGroup.add(eyeModel);
+    layerGroups.set('primary', eyeModel);
+    return { rootGroup, primaryGroup: eyeModel, interactiveMeshes, layerGroups, bodyMesh: organMeshes[0], organMeshes };
+  }
+
   const organIds = SYSTEM_ORGANS[systemId];
   if (!organIds) {
     throw new Error(
