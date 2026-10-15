@@ -301,6 +301,33 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
         }
         system3DRef.current = sys3D;
         scene.add(sys3D.rootGroup);
+
+        // Apply current controls after asynchronous GLB loading completes.
+        sys3D.layerGroups.forEach((obj, key) => {
+          if (systemLayers[key] !== undefined) obj.visible = systemLayers[key];
+        });
+        const skinOpacity = bodySkinOpacity !== undefined ? bodySkinOpacity : 22;
+        const skinMaterials = sys3D.bodyMesh
+          ? (Array.isArray(sys3D.bodyMesh.material) ? sys3D.bodyMesh.material : [sys3D.bodyMesh.material])
+          : [];
+        if (sys3D.bodyMesh) {
+          sys3D.bodyMesh.visible = skinOpacity > 0 && systemLayers.bodySkin !== false;
+          skinMaterials.forEach(material => {
+            material.transparent = true;
+            material.opacity = skinOpacity / 100;
+            material.depthWrite = false;
+          });
+        }
+        const opacity = Math.max(0.1, Math.min(1, organOpacity / 100));
+        sys3D.organMeshes?.forEach(mesh => {
+          const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          materials.forEach(material => {
+            material.transparent = opacity < 1;
+            material.opacity = opacity;
+            material.depthWrite = opacity >= 0.75;
+          });
+        });
+
         setModelLoading(null);
         setModelError(null);
       }).catch((error: unknown) => {
