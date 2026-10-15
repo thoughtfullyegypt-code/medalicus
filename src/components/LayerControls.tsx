@@ -132,20 +132,11 @@ const SYSTEM_CONFIGS: Record<OrganSystemId, SystemConfig> = {
     ]
   },
   obstetrics: {
-    title: 'Fetal Ultrasound & Gravid Controls',
-    bodyLabel: 'Maternal Abdominal Wall',
-    organLabel: 'Fetal Phantom Opacity',
-    layers: [
-      { key: 'primary', label: 'Fetal Skull & Spine', defaultOn: true },
-      { key: 'uterus', label: 'Gravid Uterus Wall', defaultOn: true },
-      { key: 'slicingPlane', label: 'Ultrasound Plane', defaultOn: true }
-    ],
-    presets: [
-      { label: 'BPD Caliper', preset: 'axial' },
-      { label: 'Femur Length', preset: 'coronal' },
-      { label: 'Profile', preset: 'sagittal' },
-      { label: '3D Gravid', preset: '3d' }
-    ]
+    title: 'Obstetric Anatomy — Real Model Required',
+    bodyLabel: 'Fetal / Maternal model unavailable',
+    organLabel: 'No validated fetal model loaded',
+    layers: [],
+    presets: []
   },
   ophthalmology_ent: {
     title: 'Human Reference Atlas Eye Model',
@@ -179,6 +170,7 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
 }) => {
   const isCardio = systemId === 'cardiovascular';
   const isEyeAtlas = systemId === 'ophthalmology_ent';
+  const isObstetricsUnavailable = systemId === 'obstetrics';
   const config = SYSTEM_CONFIGS[systemId] || SYSTEM_CONFIGS.cardiovascular;
 
   const currentSkinOpacity = bodySkinOpacity !== undefined 
@@ -250,7 +242,7 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
       </div>
 
       {/* Surface Anatomy (Body Skin) Slider */}
-      {!isEyeAtlas && <div className="bg-slate-900/70 p-2 rounded-lg border border-slate-800 space-y-1.5">
+      {!isEyeAtlas && !isObstetricsUnavailable && <div className="bg-slate-900/70 p-2 rounded-lg border border-slate-800 space-y-1.5">
         <div className="flex justify-between items-center text-[11px]">
           <span className="flex items-center space-x-1 text-slate-300 font-medium truncate">
             <User className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
@@ -276,8 +268,19 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
         </div>
       </div>}
 
+      {isObstetricsUnavailable && (
+        <div className="rounded-lg border border-amber-700/60 bg-amber-950/40 p-3 text-[11px] leading-relaxed text-amber-200">
+          A licensed fetal and gravid-uterus model is not integrated yet. The viewer intentionally does not draw fabricated anatomy.
+        </div>
+      )}
+      {isEyeAtlas && (
+        <div className="rounded-lg border border-slate-700 bg-slate-900/70 p-2 text-[10px] leading-relaxed text-slate-400">
+          This source model covers eye structures only. Ear, nasal and sinus anatomy are not included.
+        </div>
+      )}
+
       {/* Dynamic Layer Toggles for the active system */}
-      <div className="grid grid-cols-2 gap-1.5">
+      {!isObstetricsUnavailable && <div className="grid grid-cols-2 gap-1.5">
         {config.layers.map((layer) => {
           const active = isLayerActive(layer.key, layer.defaultOn);
           return (
@@ -299,10 +302,10 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
             </label>
           );
         })}
-      </div>
+      </div>}
 
       {/* Primary Organ Tissue Opacity Slider */}
-      <div className="flex items-center space-x-2 bg-slate-900/60 px-2.5 py-1.5 rounded-lg border border-slate-800">
+      {!isObstetricsUnavailable && <div className="flex items-center space-x-2 bg-slate-900/60 px-2.5 py-1.5 rounded-lg border border-slate-800">
         <Eye className="w-3.5 h-3.5 text-slate-400 shrink-0" />
         <span className="text-[11px] text-slate-400 shrink-0 truncate max-w-[140px]">
           {config.organLabel}:
@@ -319,7 +322,7 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
         <span className="text-[11px] font-mono text-slate-300 w-8 text-right shrink-0">
           {isCardio ? layers.heartOpacity : organOpacity}%
         </span>
-      </div>
+      </div>}
 
       {/* Observer Actions */}
       <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/60">
