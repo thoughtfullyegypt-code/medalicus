@@ -55,7 +55,7 @@ const ORGAN_COLORS: Record<string, number> = {
 const SYSTEM_ORGANS: Partial<Record<OrganSystemId, string[]>> = {
   neurology: ['brain'],
   pulmonology: ['lungs'],
-  gastroenterology: ['liver', 'stomach', 'intestines', 'gallbladder', 'bile-duct'],
+  gastroenterology: ['liver', 'stomach', 'intestines'],
   nephrology: ['kidneys'],
   musculoskeletal: []
 };
@@ -223,7 +223,7 @@ export async function buildRealSystem3D(systemId: OrganSystemId): Promise<System
     });
     rootGroup.add(eyeModel);
     layerGroups.set('primary', eyeModel);
-    return { rootGroup, primaryGroup: eyeModel, interactiveMeshes, layerGroups, bodyMesh: organMeshes[0], organMeshes };
+    return { rootGroup, primaryGroup: eyeModel, interactiveMeshes, layerGroups, organMeshes };
   }
 
   const organIds = SYSTEM_ORGANS[systemId];
