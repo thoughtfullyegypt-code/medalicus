@@ -27,10 +27,10 @@ interface AnatomyCanvasProps {
 
 const SYSTEM_CAMERA_FRAMES: Record<OrganSystemId, { target: [number, number, number]; radius: number; phi: number; theta: number }> = {
   cardiovascular: { target: [0, 0.2, 0], radius: 8.5, phi: 1.1, theta: 0.4 },
-  neurology: { target: [0, 0, 0], radius: 9.0, phi: 1.2, theta: 0.4 },
-  pulmonology: { target: [0, 0, 0], radius: 9.0, phi: 1.15, theta: 0.35 },
-  gastroenterology: { target: [0, 0, 0], radius: 9.0, phi: 1.2, theta: 0.3 },
-  nephrology: { target: [0, 0, 0], radius: 9.0, phi: 1.15, theta: 0.35 },
+  neurology: { target: [0, 2.7, 0], radius: 4.5, phi: 1.25, theta: 0.4 },
+  pulmonology: { target: [0, 1.5, 0], radius: 5.1, phi: 1.15, theta: 0.35 },
+  gastroenterology: { target: [0, 0.55, 0], radius: 5.0, phi: 1.2, theta: 0.3 },
+  nephrology: { target: [0, 0.15, 0], radius: 5.0, phi: 1.15, theta: 0.35 },
   musculoskeletal: { target: [0, 0, 0], radius: 9.0, phi: 1.25, theta: 0.45 },
   obstetrics: { target: [0.1, 0, 0], radius: 6.8, phi: 1.2, theta: 0.4 },
   ophthalmology_ent: { target: [0, 0, 0], radius: 4.5, phi: 1.25, theta: 0.25 }
