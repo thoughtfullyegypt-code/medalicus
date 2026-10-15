@@ -105,7 +105,7 @@ function buildSkeletonLayer(
   sourceScene: THREE.Object3D,
   filter: RegExp | null,
   interactiveMeshes: Map<string, THREE.Mesh>,
-  organMeshes: THREE.Mesh[]
+  opacityMeshes: THREE.Mesh[]
 ): THREE.Group {
   sourceScene.updateMatrixWorld(true);
   const sourceBounds = new THREE.Box3().setFromObject(sourceScene);
@@ -129,6 +129,10 @@ function buildSkeletonLayer(
     }
   });
 
+  if (filter && selectedSourceMeshes.length === 0) {
+    throw new Error('The licensed skeleton model contains no structures matching this anatomical region.');
+  }
+
   const material = new THREE.MeshStandardMaterial({ color: 0xd8d2c2, roughness: 0.67, metalness: 0.01 });
   const cartilageMaterial = new THREE.MeshStandardMaterial({ color: 0xb7aca0, roughness: 0.74 });
   const originals = new THREE.Group();
@@ -147,7 +151,7 @@ function buildSkeletonLayer(
     mesh.userData.name = displayName(mesh.name);
     mesh.userData.defaultColor = '#d8d2c2';
     originals.add(mesh);
-    organMeshes.push(mesh);
+    opacityMeshes.push(mesh);
     interactiveMeshes.set(`bone:${mesh.name}`, mesh);
 
     // This atlas source only includes one side for many paired bones. Mirror
@@ -163,7 +167,7 @@ function buildSkeletonLayer(
       left.userData.name = displayName(left.name);
       left.userData.defaultColor = '#d8d2c2';
       mirrored.add(left);
-      organMeshes.push(left);
+      opacityMeshes.push(left);
       interactiveMeshes.set(`bone:${left.name}`, left);
     }
   });
@@ -279,7 +283,8 @@ export async function buildRealSystem3D(systemId: OrganSystemId): Promise<System
     const skeletonGLTF = await loadAsset(MODEL_URLS.skeleton);
     const skeletonScene = skeletonGLTF.scene.clone(true);
     const skeletonFilter = systemId === 'musculoskeletal' ? null : BONE_FILTERS[systemId] ?? null;
-    const skeletonGroup = buildSkeletonLayer(skeletonScene, skeletonFilter, interactiveMeshes, organMeshes);
+    const skeletonOpacityMeshes = systemId === 'musculoskeletal' ? organMeshes : [];
+    const skeletonGroup = buildSkeletonLayer(skeletonScene, skeletonFilter, interactiveMeshes, skeletonOpacityMeshes);
     layerGroups.set(
       systemId === 'neurology' ? 'skull' :
       systemId === 'musculoskeletal' ? 'bones' :
