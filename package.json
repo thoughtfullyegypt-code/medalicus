@@ -1,6 +1,6 @@
 {
   "name": "medalicus",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "description": "Source-first clinical learning studio; clean foundation for validated anatomy models and real echocardiography studies.",
   "main": "index.js",
