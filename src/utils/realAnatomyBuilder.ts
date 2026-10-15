@@ -10,13 +10,13 @@ import type { System3DScene } from './proceduralSystemsBuilder';
  * a mutable "main" branch. Their source and licenses are documented in README.
  */
 const SOURCE_COMMIT = 'e4d76fbb424d15e1364963528a082a78fa359161';
-const SOURCE_ROOT = \`https://raw.githubusercontent.com/yamz8/human-body-simulator/\${SOURCE_COMMIT}/public\`;
+const SOURCE_ROOT = `https://raw.githubusercontent.com/yamz8/human-body-simulator/${SOURCE_COMMIT}/public`;
 const MODEL_URLS = {
-  organs: \`\${SOURCE_ROOT}/models/anatomy-organs.glb\`,
-  skin: \`\${SOURCE_ROOT}/models/anatomy-skin.glb\`,
-  skeleton: \`\${SOURCE_ROOT}/models/overview-skeleton.glb\`
+  organs: `${SOURCE_ROOT}/models/anatomy-organs.glb`,
+  skin: `${SOURCE_ROOT}/models/anatomy-skin.glb`,
+  skeleton: `${SOURCE_ROOT}/models/overview-skeleton.glb`
 } as const;
-const DRACO_PATH = \`\${SOURCE_ROOT}/draco/\`;
+const DRACO_PATH = `${SOURCE_ROOT}/draco/`;
 const FLOOR_Y = -3.48;
 const BODY_DEPTH = 0.4;
 const BODY_HEIGHT = 6.717;
@@ -56,10 +56,10 @@ const SYSTEM_ORGANS: Partial<Record<OrganSystemId, string[]>> = {
 };
 
 const BONE_FILTERS: Partial<Record<OrganSystemId, RegExp>> = {
-  neurology: /skull|cranium|calvar|mandible|maxilla|sphenoid|temporal bone|frontal bone|parietal|occipital|ethmoid|nasal bone|zygomatic|lacrimal|palatine|vomer|concha|hyoid/i,
-  pulmonology: /rib|sternum|thoracic vertebra|thoracic spine|clavicle|scapula|costal cartilage/i,
-  gastroenterology: /rib|sternum|thoracic vertebra|lumbar vertebra|sacrum|costal cartilage/i,
-  nephrology: /lumbar vertebra|sacrum|ilium|ischium|pubis|pelvis|rib 11|rib 12/i
+  neurology: /skull|cranium|calvar|mandible|maxilla|sphenoid|temporal|frontal|parietal|occipital|ethmoid|nasal bone|zygomatic|lacrimal|palatine|vomer|concha|hyoid|os frontale|os parietale|os temporale/i,
+  pulmonology: /rib|costae|sternum|vertebra|vertebrae|thoracic|clavicle|scapula|costal cartilage/i,
+  gastroenterology: /rib|costae|sternum|vertebra|vertebrae|thoracic|lumbar|sacrum|costal cartilage/i,
+  nephrology: /lumbar|vertebra|vertebrae|sacrum|ilium|ischium|pubis|pelvis|rib 11|rib 12/i
 };
 
 function getSemanticOrganId(name: string): string | null {
@@ -104,7 +104,8 @@ function placeAtSourceTransform(mesh: THREE.Mesh, source: THREE.Object3D): void 
 function buildSkeletonLayer(
   sourceScene: THREE.Object3D,
   filter: RegExp | null,
-  interactiveMeshes: Map<string, THREE.Mesh>
+  interactiveMeshes: Map<string, THREE.Mesh>,
+  organMeshes: THREE.Mesh[]
 ): THREE.Group {
   sourceScene.updateMatrixWorld(true);
   const sourceBounds = new THREE.Box3().setFromObject(sourceScene);
@@ -146,7 +147,8 @@ function buildSkeletonLayer(
     mesh.userData.name = displayName(mesh.name);
     mesh.userData.defaultColor = '#d8d2c2';
     originals.add(mesh);
-    interactiveMeshes.set(\`bone:\${mesh.name}\`, mesh);
+    organMeshes.push(mesh);
+    interactiveMeshes.set(`bone:${mesh.name}`, mesh);
 
     // This atlas source only includes one side for many paired bones. Mirror
     // those explicitly labelled ".r" so the body is not visibly one-sided.
@@ -161,7 +163,8 @@ function buildSkeletonLayer(
       left.userData.name = displayName(left.name);
       left.userData.defaultColor = '#d8d2c2';
       mirrored.add(left);
-      interactiveMeshes.set(\`bone:\${left.name}\`, left);
+      organMeshes.push(left);
+      interactiveMeshes.set(`bone:${left.name}`, left);
     }
   });
 
@@ -185,7 +188,7 @@ export async function buildRealSystem3D(systemId: OrganSystemId): Promise<System
   }
 
   const rootGroup = new THREE.Group();
-  rootGroup.name = \`RealAnatomy_\${systemId}\`;
+  rootGroup.name = `RealAnatomy_${systemId}`;
   const primaryGroup = new THREE.Group();
   primaryGroup.name = 'Real anatomical structures';
   rootGroup.add(primaryGroup);
@@ -226,15 +229,15 @@ export async function buildRealSystem3D(systemId: OrganSystemId): Promise<System
       placeAtSourceTransform(mesh, sourceMesh);
       mesh.userData.name = displayName(sourceMesh.name);
       mesh.userData.organId = organId;
-      mesh.userData.defaultColor = \`#\${(ORGAN_COLORS[organId] ?? 0xc9877b).toString(16).padStart(6, '0')}\`;
+      mesh.userData.defaultColor = `#${(ORGAN_COLORS[organId] ?? 0xc9877b).toString(16).padStart(6, '0')}`;
       mesh.position.add(bodyTranslation);
       layer.add(mesh);
       organMeshes.push(mesh);
-      interactiveMeshes.set(\`organ:\${organId}:\${mesh.name}\`, mesh);
+      interactiveMeshes.set(`organ:${organId}:${mesh.name}`, mesh);
     });
 
     if (organLayers.size === 0) {
-      throw new Error(\`The open anatomy atlas did not contain the expected \${organIds.join(', ')} mesh groups.\`);
+      throw new Error(`The open anatomy atlas did not contain the expected ${organIds.join(', ')} mesh groups.`);
     }
 
     layerGroups.set('primary', primaryGroup);
@@ -264,10 +267,10 @@ export async function buildRealSystem3D(systemId: OrganSystemId): Promise<System
     mesh.receiveShadow = false;
     mesh.renderOrder = 10;
     mesh.userData.name = 'Skin envelope';
-    mesh.position.y += FLOOR_Y - (-3.534865);
     skinMeshes.push(mesh);
   });
-  primaryGroup.add(skinRoot);
+  skinRoot.position.y += FLOOR_Y - (-3.534865);
+  rootGroup.add(skinRoot);
   if (skinMeshes[0]) layerGroups.set('bodySkin', skinRoot);
 
   // Skeletal regions are actual atlas meshes, not tubes/cylinders generated
@@ -276,7 +279,7 @@ export async function buildRealSystem3D(systemId: OrganSystemId): Promise<System
     const skeletonGLTF = await loadAsset(MODEL_URLS.skeleton);
     const skeletonScene = skeletonGLTF.scene.clone(true);
     const skeletonFilter = systemId === 'musculoskeletal' ? null : BONE_FILTERS[systemId] ?? null;
-    const skeletonGroup = buildSkeletonLayer(skeletonScene, skeletonFilter, interactiveMeshes);
+    const skeletonGroup = buildSkeletonLayer(skeletonScene, skeletonFilter, interactiveMeshes, organMeshes);
     layerGroups.set(
       systemId === 'neurology' ? 'skull' :
       systemId === 'musculoskeletal' ? 'bones' :
