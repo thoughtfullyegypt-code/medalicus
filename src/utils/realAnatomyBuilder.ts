@@ -131,7 +131,7 @@ function buildSkeletonLayer(
   sourceScene.traverse((object) => {
     if (!(object as THREE.Mesh).isMesh) return;
     const mesh = object as THREE.Mesh;
-    const sourceName = mesh.name || 'Anatomical bone';
+    const sourceName = String(mesh.userData.anatomicalSourceName || mesh.name || 'Anatomical bone');
     if (!filter || filter.test(sourceName)) {
       selectedSourceMeshes.push(mesh);
     }
@@ -152,7 +152,7 @@ function buildSkeletonLayer(
     sourceMesh.updateWorldMatrix(true, false);
     const boneMaterial = /costal cartilage/i.test(sourceMesh.name) ? cartilageMaterial : material;
     const mesh = new THREE.Mesh(sourceMesh.geometry, boneMaterial);
-    mesh.name = sourceMesh.name || 'Anatomical bone';
+    mesh.name = String(sourceMesh.userData.anatomicalSourceName || sourceMesh.name || 'Anatomical bone');
     mesh.position.setFromMatrixPosition(sourceMesh.matrixWorld);
     mesh.quaternion.setFromRotationMatrix(sourceMesh.matrixWorld);
     mesh.scale.setFromMatrixScale(sourceMesh.matrixWorld);
@@ -167,11 +167,9 @@ function buildSkeletonLayer(
     if (/\.r\.?$/i.test(sourceMesh.name)) {
       const left = new THREE.Mesh(sourceMesh.geometry, boneMaterial);
       left.name = sourceMesh.name.trim().replace(/\.r\.?$/i, '.l');
-      left.position.copy(mesh.position);
-      left.position.x *= -1;
-      left.quaternion.copy(mesh.quaternion);
-      left.scale.copy(mesh.scale);
-      left.scale.x *= -1;
+      const mirroredMatrix = sourceMesh.matrixWorld.clone();
+      mirroredMatrix.premultiply(new THREE.Matrix4().makeScale(-1, 1, 1));
+      mirroredMatrix.decompose(left.position, left.quaternion, left.scale);
       left.userData.name = displayName(left.name);
       left.userData.defaultColor = '#d8d2c2';
       mirrored.add(left);
@@ -328,6 +326,16 @@ export async function buildRealSystem3D(systemId: OrganSystemId): Promise<System
   // from approximate coordinates.
   if (systemId === 'musculoskeletal' || BONE_FILTERS[systemId]) {
     const skeletonGLTF = await loadAsset(MODEL_URLS.skeleton);
+    // GLTF mesh names can be generic; resolve each source node name from the
+    // loader's node associations so region filters and labels use real anatomy.
+    skeletonGLTF.scene.traverse((object) => {
+      if (!(object as THREE.Mesh).isMesh) return;
+      const mesh = object as THREE.Mesh;
+      const nodeIndex = skeletonGLTF.parser.associations.get(mesh)?.nodes;
+      mesh.userData.anatomicalSourceName = nodeIndex == null
+        ? mesh.name
+        : skeletonGLTF.parser.json.nodes[nodeIndex]?.name || mesh.name;
+    });
     const skeletonScene = skeletonGLTF.scene.clone(true);
     const skeletonFilter = systemId === 'musculoskeletal' ? null : BONE_FILTERS[systemId] ?? null;
     const skeletonOpacityMeshes = systemId === 'musculoskeletal' ? organMeshes : [];
