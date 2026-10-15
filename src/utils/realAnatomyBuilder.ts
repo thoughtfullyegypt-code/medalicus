@@ -34,7 +34,10 @@ function loadAsset(url: string, decoderPath = DRACO_PATH): Promise<LoadedGLTF> {
   if (!cached) {
     const draco = new DRACOLoader().setDecoderPath(decoderPath);
     const loader = new GLTFLoader().setDRACOLoader(draco);
-    cached = loader.loadAsync(url).finally(() => draco.dispose());
+    cached = loader.loadAsync(url).catch((error: unknown) => {
+      gltfCache.delete(cacheKey);
+      throw error;
+    }).finally(() => draco.dispose());
     gltfCache.set(cacheKey, cached);
   }
   return cached;
@@ -196,7 +199,7 @@ export async function buildRealSystem3D(systemId: OrganSystemId): Promise<System
     rootGroup.add(grid);
 
     const eyeModel = gltf.scene.clone(true);
-    eyeModel.name = 'Human Reference Atlas Eye — 23 labeled structures';
+    eyeModel.name = 'Human Reference Atlas layered eye';
     eyeModel.updateMatrixWorld(true);
     const bounds = new THREE.Box3().setFromObject(eyeModel);
     const size = bounds.getSize(new THREE.Vector3());
@@ -230,8 +233,8 @@ export async function buildRealSystem3D(systemId: OrganSystemId): Promise<System
   if (!organIds) {
     throw new Error(
       systemId === 'obstetrics'
-        ? 'A licensed, anatomically appropriate fetal and gravid-uterus 3D model has not been integrated yet. Synthetic anatomy is disabled.'
-        : 'A licensed, anatomically appropriate eye and ENT 3D model has not been integrated yet. Synthetic anatomy is disabled.'
+        ? 'A licensed fetal and gravid-uterus 3D model has not been integrated yet. The obstetric view is disabled rather than rendering fabricated anatomy.'
+        : 'A complete eye and ENT atlas is not integrated. The eye model is available separately; ENT structures are not included.'
     );
   }
 
@@ -317,7 +320,7 @@ export async function buildRealSystem3D(systemId: OrganSystemId): Promise<System
     mesh.userData.name = 'Skin envelope';
     skinMeshes.push(mesh);
   });
-  skinRoot.position.y += FLOOR_Y - (-3.534865);
+  skinRoot.position.set(0, FLOOR_Y - (-3.534865), 0);
   rootGroup.add(skinRoot);
   if (skinMeshes[0]) layerGroups.set('bodySkin', skinRoot);
 
