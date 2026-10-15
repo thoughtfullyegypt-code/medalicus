@@ -1,12 +1,11 @@
 {
   "name": "medalicus",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "type": "module",
-  "description": "",
+  "description": "Source-first clinical learning studio; clean foundation for validated anatomy models and real echocardiography studies.",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/verify_models.js",
     "build": "vite build",
     "preview": "vite preview"
   },
