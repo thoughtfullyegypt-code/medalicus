@@ -88,6 +88,31 @@ Medalicus uses exclusively open-source, licensed anatomical datasets:
 | **EchoNet-Dynamic** | Stanford University | **MIT / Research** | Chamber contour traces and ejection fraction calculations. |
 | **TotalSegmentator v2** | Wasserthal et al., Radiology 2023 | **Apache 2.0** | Multi-organ CT/MRI segmentation classes. |
 
+## Real 3D anatomy atlas integration
+
+The non-cardiac 3D viewer now loads imported, named anatomical meshes instead of its procedural shape builder. The atlas assets are pinned to immutable upstream Git commits and loaded by the browser; a network/source failure is shown as a model-unavailable warning, not silently replaced with fake anatomy.
+
+| Viewer system | Real model coverage in this branch | Important limitation |
+| :--- | :--- | :--- |
+| Neurology | Brain atlas mesh and selected cranial bones | Does not yet include a full labeled neurovascular tree or ventricular system |
+| Pulmonology | Lung meshes, with selected real thoracic bones | Does not yet include a labeled bronchial tree, pulmonary vessels, or genuine CT slices |
+| Gastroenterology | Liver, stomach and intestinal meshes, with selected real ribs/spine | Does not yet include an integrated biliary tree, pancreas or sectional imaging |
+| Nephrology | Bilateral kidney meshes, with selected lumbar/pelvic bones | Does not yet include a complete collecting system, renal vessels or prostate model |
+| Musculoskeletal | Imported articulated skeleton meshes | Not a knee-specific ligament/cartilage MRI model |
+| Ophthalmology | Layered eye structures from the Human Reference Atlas | Eye only; ear/nasal/sinus anatomy and actual OCT source images are not included |
+| Obstetrics | Not integrated | Viewer explicitly reports that an appropriate fetal/gravid-uterus model is unavailable; no synthetic substitute is shown |
+| Cardiovascular | Existing dedicated cardiac viewer and its local heart asset path | Still uses its existing specialized rendering path; this update does not claim the whole cardiac scene is segmented from a patient scan |
+
+The axial/coronal/sagittal camera buttons change the 3D viewing direction; they are **not** real CT/MRI multiplanar reconstruction. The clinical-imaging simulator is a separate part of the app.
+
+### Additional source and license notices
+
+- **BodyParts3D 3.0-derived organ and skin meshes** (anatomy-organs.glb, anatomy-skin.glb), © The Database Center for Life Science (DBCLS). Licensed under [CC BY-SA 2.1 Japan](https://creativecommons.org/licenses/by-sa/2.1/jp/legalcode). Source archive: [BodyParts3D](https://doi.org/10.18908/lsdba.nbdc00837-000); atlas build/source: [yamz8/human-body-simulator](https://github.com/yamz8/human-body-simulator).
+- **Open3Dmodel / Open Anatomy skeleton** (overview-skeleton.glb). Licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/legalcode). Attribution and derivative details: [anatomytool.org/open3dmodel-create](https://anatomytool.org/open3dmodel-create); atlas build/source: [yamz8/human-body-simulator](https://github.com/yamz8/human-body-simulator).
+- **Human Reference Atlas eye model** (eye-anatomy.glb), derived from the HRA 3D Reference Object Library / US National Library of Medicine Visible Human Project and adapted by [huahbo/ocularium](https://github.com/huahbo/ocularium). Model licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Original reference library: [humanatlas.io/3d-reference-library](https://humanatlas.io/3d-reference-library).
+
+See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for pinned source revisions and asset-level notices. ShareAlike obligations may apply to redistributions or adaptations of the identified anatomy models; review each source license before redistributing model files or derivatives.
+
 ---
 
 ## ⚠️ Medical Safety Disclaimer
