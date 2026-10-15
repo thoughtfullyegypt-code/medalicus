@@ -170,6 +170,9 @@ export const Header: React.FC<HeaderProps> = ({
             {mode.id === 'quiz' && quizScore > 0 && (
               <span className="rounded-full bg-teal-50 px-1.5 py-0.5 text-[10px] font-semibold text-teal-800">{quizScore}</span>
             )}
+            {mode.id === 'quiz' && quizStreak > 1 && (
+              <span className="hidden xl:inline text-[10px] font-medium text-slate-400">{quizStreak} streak</span>
+            )}
           </button>
         ))}
       </nav>
@@ -197,6 +200,10 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
               <button onClick={() => { onOpenSandbox(); setToolsOpen(false); }} className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left text-xs font-medium text-slate-700 transition hover:bg-slate-50">
                 <UploadCloud className="h-4 w-4 text-teal-700" /><span>Open local DICOM sandbox</span>
+              </button>
+              <button onClick={onToggleComparison} className={`flex w-full items-center gap-3 rounded-xl px-2.5 py-2.5 text-left text-xs font-medium transition ${comparisonMode ? 'bg-teal-50 text-teal-800' : 'text-slate-700 hover:bg-slate-50'}`}>
+                <Activity className="h-4 w-4 text-teal-700" /><span>Normal / pathology comparison</span>
+                {comparisonMode && <Check className="ml-auto h-3.5 w-3.5" />}
               </button>
               <div className="my-1.5 border-t border-slate-100" />
               <div className="flex items-center justify-between gap-2 px-2.5 py-2">
