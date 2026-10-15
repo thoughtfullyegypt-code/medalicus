@@ -109,6 +109,65 @@ export const ReferenceModal: React.FC<ReferenceModalProps> = ({ onClose }) => {
           </div>
         </div>
 
+        {/* Comprehensive Attribution & Licensing Matrix */}
+        <div className="space-y-2 bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+          <div className="flex items-center space-x-2 text-slate-200 font-bold text-xs">
+            <CheckCircle2 className="w-4 h-4 text-teal-400" />
+            <span>Anatomical Data Sources, Attributions & Open Licenses</span>
+          </div>
+          <div className="space-y-2 text-[11px] text-slate-300">
+            <div className="p-2 rounded bg-slate-950/70 border border-slate-800">
+              <div className="flex justify-between items-center font-semibold text-white">
+                <span>BodyParts3D 4.0 Whole-Body CT Anatomy</span>
+                <span className="text-[10px] font-mono text-teal-400 bg-teal-950 px-1.5 py-0.5 rounded border border-teal-800">CC BY 4.0</span>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">
+                Database Center for Life Science (DBCLS), Japan. Centrelines and tapering coronary radii extracted from authentic 4.0 CT meshes.
+              </p>
+            </div>
+
+            <div className="p-2 rounded bg-slate-950/70 border border-slate-800">
+              <div className="flex justify-between items-center font-semibold text-white">
+                <span>SYNTAX Score Coronary Segments (Segments 1–16c)</span>
+                <span className="text-[10px] font-mono text-teal-400 bg-teal-950 px-1.5 py-0.5 rounded border border-teal-800">Clinical Standard</span>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">
+                SYNTAX score classification system (Sianos et al., EuroIntervention 2005; EACTS/ESC Guidelines).
+              </p>
+            </div>
+
+            <div className="p-2 rounded bg-slate-950/70 border border-slate-800">
+              <div className="flex justify-between items-center font-semibold text-white">
+                <span>Realistic Textured Heart 3D Mesh</span>
+                <span className="text-[10px] font-mono text-teal-400 bg-teal-950 px-1.5 py-0.5 rounded border border-teal-800">CC BY 4.0</span>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">
+                Author: <em>neshallads</em> (Sketchfab). High-yield ventricular sulci, aortic root, and myocardial surface rendering.
+              </p>
+            </div>
+
+            <div className="p-2 rounded bg-slate-950/70 border border-slate-800">
+              <div className="flex justify-between items-center font-semibold text-white">
+                <span>EchoNet-Dynamic & TotalSegmentator v2 Manifests</span>
+                <span className="text-[10px] font-mono text-teal-400 bg-teal-950 px-1.5 py-0.5 rounded border border-teal-800">MIT / Apache 2.0</span>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">
+                Stanford University EchoNet-Dynamic (MIT) and Wasserthal et al. TotalSegmentator v2 (Apache 2.0).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mandatory Safety & Educational Disclaimer */}
+        <div className="bg-amber-950/40 border border-amber-500/40 rounded-xl p-3.5 space-y-1.5 text-[11px]">
+          <div className="font-bold text-amber-300 flex items-center space-x-1.5">
+            <span>⚠️ Safety Notice & Clinical Disclaimer</span>
+          </div>
+          <p className="text-amber-200/90 leading-relaxed text-[10px]">
+            Medalicus is designed solely for <strong>educational simulation and spatial learning</strong> by medical students, residents, fellows, and healthcare professionals. The 3D anatomical models and simulated radiographic projections are simplified for pedagogical clarity and are <strong>not clinically validated</strong>, nor intended for diagnostic use, interventional procedural planning, or patient-specific treatment decisions.
+          </p>
+        </div>
+
         {/* Footer */}
         <div className="pt-2 border-t border-slate-800 flex justify-end">
           <button
