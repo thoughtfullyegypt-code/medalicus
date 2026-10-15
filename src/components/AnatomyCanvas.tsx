@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { Loader2, AlertTriangle, X } from 'lucide-react';
 import { GantryAngles, ImagingModality, OrganSystemId } from '../types';
 import { buildCoronaryAnatomy, calculateCarmVector, BuiltAnatomy } from '../utils/anatomyBuilder';
 import { buildSystem3D, System3DScene } from '../utils/proceduralSystemsBuilder';
@@ -66,7 +67,11 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
   const cameraSphericalRef = useRef({ radius: 8.5, theta: 0.4, phi: 1.1 });
 
   // Hover tooltip
-  const [hoveredVessel, setHoveredVessel] = React.useState<{ name: string; abbr?: string } | null>(null);
+  const [hoveredVessel, setHoveredVessel] = useState<{ name: string; abbr?: string } | null>(null);
+
+  // 3D Model Loading & Error states
+  const [modelLoading, setModelLoading] = useState<{ active: boolean; label: string; progress: number } | null>(null);
+  const [modelError, setModelError] = useState<{ file: string; message: string } | null>(null);
 
   const updateCameraPosition = () => {
     if (!cameraRef.current) return;
@@ -177,10 +182,19 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
 
       // Attempt to load realistic textured heart GLB model
       const loader = new GLTFLoader();
-      const heartUrl = `${import.meta.env.BASE_URL}models/heart.glb`;
+      const cleanBase = (import.meta.env.BASE_URL || './').replace(/\/+$/, '') + '/';
+      const heartUrl = `${cleanBase}models/heart.glb`;
+      const bodyUrl = `${cleanBase}models/human_body.glb`;
+
+      console.log(`[3D Loader] Initiating fetch for ${heartUrl}...`);
+      setModelLoading({ active: true, label: 'Realistic Cardiac Anatomy (heart.glb)', progress: 0 });
+
       loader.load(
         heartUrl,
         (gltf) => {
+          console.log(`[3D Loader] ✓ Successfully loaded and parsed ${heartUrl}`);
+          setModelLoading(null);
+          setModelError(null);
           const heartModel = gltf.scene;
           heartModel.name = 'RealisticHeartModel';
           heartModel.scale.set(1.45, 1.45, 1.45);
@@ -208,15 +222,28 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
           anatomy.heartGroup.add(heartModel);
           realisticHeartRef.current = heartModel;
         },
-        undefined,
-        (err) => console.log('heart.glb using procedural heart mass fallback', err)
+        (xhr) => {
+          if (xhr.lengthComputable && xhr.total > 0) {
+            const pct = Math.round((xhr.loaded / xhr.total) * 100);
+            console.log(`[3D Loader] Loading heart.glb: ${pct}%`);
+            setModelLoading({ active: true, label: 'Realistic Cardiac Anatomy (heart.glb)', progress: pct });
+          }
+        },
+        (err) => {
+          console.error(`[3D Loader] ✗ Failed to load ${heartUrl}:`, err);
+          setModelLoading(null);
+          setModelError({
+            file: 'models/heart.glb',
+            message: 'Failed to download or parse 3D heart model. Clinical procedural anatomy fallback is active.'
+          });
+        }
       );
 
       // Attempt to load realistic body skin envelope GLB
-      const bodyUrl = `${import.meta.env.BASE_URL}models/human_body.glb`;
       loader.load(
         bodyUrl,
         (gltf) => {
+          console.log(`[3D Loader] ✓ Successfully loaded ${bodyUrl}`);
           const bodyModel = gltf.scene;
           bodyModel.name = 'RealisticBodyModel';
           bodyModel.rotation.y = Math.PI / 2;
@@ -239,7 +266,7 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
           realisticBodyRef.current = bodyModel;
         },
         undefined,
-        (err) => console.log('human_body.glb using procedural body envelope fallback', err)
+        (err) => console.log(`[3D Loader] human_body.glb procedural fallback:`, err)
       );
     } else {
       // Build top-tier clinical procedural anatomy for all 7 other systems
@@ -618,6 +645,46 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
           <div className="text-[10px] text-teal-400 font-mono">
             {hoveredVessel.abbr ? `(${hoveredVessel.abbr}) - ` : ''}Click to Inspect
           </div>
+        </div>
+      )}
+      {/* 3D Model Loading Spinner Overlay */}
+      {modelLoading?.active && (
+        <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs flex flex-col items-center justify-center z-30 pointer-events-none">
+          <div className="bg-[#0d131c] border border-teal-500/40 rounded-xl p-4 shadow-2xl flex flex-col items-center space-y-2.5 max-w-xs text-center">
+            <Loader2 className="w-6 h-6 text-teal-400 animate-spin" />
+            <div className="text-xs font-semibold text-slate-200">{modelLoading.label}</div>
+            <div className="w-48 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div 
+                className="bg-teal-400 h-full transition-all duration-200" 
+                style={{ width: `${modelLoading.progress}%` }} 
+              />
+            </div>
+            <div className="text-[10px] font-mono text-teal-400">{modelLoading.progress}%</div>
+          </div>
+        </div>
+      )}
+
+      {/* 3D Model Load Error Alert Banner */}
+      {modelError && (
+        <div className="absolute top-12 left-3 right-3 sm:right-auto sm:max-w-md bg-amber-950/90 border border-amber-500/80 text-amber-200 px-3 py-2 rounded-lg shadow-xl z-30 flex items-start justify-between space-x-2">
+          <div className="flex items-start space-x-2">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <div className="text-[11px] font-bold text-amber-300">
+                Model Load Warning: <span className="font-mono text-amber-200">{modelError.file}</span>
+              </div>
+              <div className="text-[10px] text-amber-200/90 leading-tight">
+                {modelError.message}
+              </div>
+            </div>
+          </div>
+          <button 
+            onClick={() => setModelError(null)}
+            className="text-amber-400 hover:text-white p-0.5 rounded hover:bg-amber-900/50 transition cursor-pointer"
+            title="Dismiss notice"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
     </div>
