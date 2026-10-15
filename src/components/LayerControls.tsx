@@ -219,10 +219,10 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
   };
 
   return (
-    <div className="bg-[#0f1724] border border-slate-800 rounded-xl p-3 flex flex-col space-y-2.5 select-none text-xs">
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-1.5">
-        <div className="flex items-center space-x-1.5 font-semibold text-slate-200">
-          <Layers className="w-3.5 h-3.5 text-teal-400" />
+    <div className="bg-white border border-slate-200 rounded-xl p-3 flex flex-col space-y-2.5 select-none text-xs">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-1.5">
+        <div className="flex items-center space-x-1.5 font-semibold text-slate-800">
+          <Layers className="w-3.5 h-3.5 text-teal-700" />
           <span className="truncate max-w-[190px]">{config.title}</span>
         </div>
 
@@ -233,7 +233,7 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
               key={p.label}
               onClick={() => onSetCameraPreset?.(p.preset)}
               title={`Switch 3D Viewport to ${p.label}`}
-              className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-teal-300 font-mono transition"
+              className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 hover:bg-slate-200 text-teal-800 font-mono transition"
             >
               {p.label}
             </button>
@@ -242,13 +242,13 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
       </div>
 
       {/* Surface Anatomy (Body Skin) Slider */}
-      {!isEyeAtlas && !isObstetricsUnavailable && <div className="bg-slate-900/70 p-2 rounded-lg border border-slate-800 space-y-1.5">
+      {!isEyeAtlas && !isObstetricsUnavailable && <div className="bg-slate-50 p-2 rounded-lg border border-slate-200 space-y-1.5">
         <div className="flex justify-between items-center text-[11px]">
-          <span className="flex items-center space-x-1 text-slate-300 font-medium truncate">
-            <User className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+          <span className="flex items-center space-x-1 text-slate-700 font-medium truncate">
+            <User className="w-3.5 h-3.5 text-cyan-700 shrink-0" />
             <span className="truncate">{config.bodyLabel}:</span>
           </span>
-          <span className="font-mono text-cyan-300 font-bold bg-cyan-950/80 px-1.5 py-0.2 rounded border border-cyan-800 shrink-0 ml-1">
+          <span className="font-mono text-cyan-800 font-bold bg-cyan-50 px-1.5 py-0.2 rounded border border-cyan-200 shrink-0 ml-1">
             {currentSkinOpacity > 0 ? `${currentSkinOpacity}%` : 'OFF'}
           </span>
         </div>
@@ -259,7 +259,7 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
           step="1"
           value={currentSkinOpacity}
           onChange={e => handleSkinOpacity(parseInt(e.target.value, 10))}
-          className="w-full accent-cyan-400 h-1.5 bg-slate-800 rounded cursor-pointer"
+          className="w-full accent-cyan-400 h-1.5 bg-slate-100 rounded cursor-pointer"
         />
         <div className="flex justify-between text-[10px] text-slate-500 font-mono">
           <span>0% (Internal)</span>
@@ -269,12 +269,12 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
       </div>}
 
       {isObstetricsUnavailable && (
-        <div className="rounded-lg border border-amber-700/60 bg-amber-950/40 p-3 text-[11px] leading-relaxed text-amber-200">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-800">
           A licensed fetal and gravid-uterus model is not integrated yet. The viewer intentionally does not draw fabricated anatomy.
         </div>
       )}
       {isEyeAtlas && (
-        <div className="rounded-lg border border-slate-700 bg-slate-900/70 p-2 text-[10px] leading-relaxed text-slate-400">
+        <div className="rounded-lg border border-slate-700 bg-slate-50 p-2 text-[10px] leading-relaxed text-slate-500">
           This source model covers eye structures only. Ear, nasal and sinus anatomy are not included.
         </div>
       )}
@@ -288,8 +288,8 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
               key={layer.key}
               className={`flex items-center space-x-1.5 px-2 py-1 rounded border cursor-pointer transition ${
                 active 
-                  ? 'bg-teal-950/40 border-teal-800/60 text-teal-300 font-semibold' 
-                  : 'bg-slate-900/60 border-slate-800 text-slate-400'
+                  ? 'bg-teal-50 border-teal-200 text-teal-800 font-semibold' 
+                  : 'bg-slate-50 border-slate-200 text-slate-500'
               }`}
             >
               <input
@@ -305,9 +305,9 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
       </div>}
 
       {/* Primary Organ Tissue Opacity Slider */}
-      {!isObstetricsUnavailable && <div className="flex items-center space-x-2 bg-slate-900/60 px-2.5 py-1.5 rounded-lg border border-slate-800">
-        <Eye className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-        <span className="text-[11px] text-slate-400 shrink-0 truncate max-w-[140px]">
+      {!isObstetricsUnavailable && <div className="flex items-center space-x-2 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200">
+        <Eye className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+        <span className="text-[11px] text-slate-500 shrink-0 truncate max-w-[140px]">
           {config.organLabel}:
         </span>
         <input
@@ -317,35 +317,35 @@ export const LayerControls: React.FC<LayerControlsProps> = ({
           step="1"
           value={isCardio ? layers.heartOpacity : organOpacity}
           onChange={e => handleOrganOpacity(parseInt(e.target.value, 10))}
-          className="w-full accent-teal-400 h-1.5 bg-slate-800 rounded cursor-pointer"
+          className="w-full accent-teal-400 h-1.5 bg-slate-100 rounded cursor-pointer"
         />
-        <span className="text-[11px] font-mono text-slate-300 w-8 text-right shrink-0">
+        <span className="text-[11px] font-mono text-slate-700 w-8 text-right shrink-0">
           {isCardio ? layers.heartOpacity : organOpacity}%
         </span>
       </div>}
 
       {/* Observer Actions */}
-      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/60">
+      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200">
         <button
           onClick={onResetObserver}
-          className="flex items-center justify-center space-x-1.5 px-2.5 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 transition text-[11px]"
+          className="flex items-center justify-center space-x-1.5 px-2.5 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 transition text-[11px]"
         >
-          <RefreshCw className="w-3 h-3 text-slate-400" />
+          <RefreshCw className="w-3 h-3 text-slate-500" />
           <span>Reset 3D View</span>
         </button>
 
         <button
           onClick={isCardio ? onAlignToBeamAxis : () => onSetCameraPreset?.('axial')}
-          className="flex items-center justify-center space-x-1.5 px-2.5 py-1.5 rounded bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/40 text-teal-200 font-medium transition text-[11px]"
+          className="flex items-center justify-center space-x-1.5 px-2.5 py-1.5 rounded bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/40 text-teal-800 font-medium transition text-[11px]"
         >
           {isCardio ? (
             <>
-              <Crosshair className="w-3 h-3 text-teal-400" />
+              <Crosshair className="w-3 h-3 text-teal-700" />
               <span>Align to Beam</span>
             </>
           ) : (
             <>
-              <Compass className="w-3 h-3 text-teal-400" />
+              <Compass className="w-3 h-3 text-teal-700" />
               <span>Align Axial CT</span>
             </>
           )}
