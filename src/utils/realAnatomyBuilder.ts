@@ -289,7 +289,6 @@ export async function buildRealSystem3D(systemId: OrganSystemId): Promise<System
       throw new Error(`The open anatomy atlas did not contain the expected ${organIds.join(', ')} mesh groups.`);
     }
 
-    layerGroups.set('primary', primaryGroup);
     organLayers.forEach((group, id) => {
       if (id === 'brain') layerGroups.set('cortex', group);
       if (id === 'lungs') layerGroups.set('lungs', group);
