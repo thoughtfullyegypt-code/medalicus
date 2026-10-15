@@ -48,24 +48,24 @@ export const GantryControls: React.FC<GantryControlsProps> = ({
   };
 
   return (
-    <div className="bg-[#0f1724] border border-slate-800 rounded-xl p-3.5 flex flex-col space-y-3 select-none text-xs">
+    <div className="bg-white border border-slate-200 rounded-xl p-3.5 flex flex-col space-y-3 select-none text-xs">
       {/* Header & Filter */}
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-        <div className="flex items-center space-x-1.5 font-semibold text-slate-200">
-          <RotateCw className="w-4 h-4 text-teal-400" />
+      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+        <div className="flex items-center space-x-1.5 font-semibold text-slate-800">
+          <RotateCw className="w-4 h-4 text-teal-700" />
           <span>C-Arm Gantry Angulation</span>
         </div>
 
         {/* LCA / RCA Filter Buttons */}
-        <div className="flex items-center bg-slate-900 border border-slate-800 rounded p-0.5 space-x-0.5">
+        <div className="flex items-center bg-white border border-slate-200 rounded p-0.5 space-x-0.5">
           {(['ALL', 'LCA', 'RCA'] as const).map(sys => (
             <button
               key={sys}
               onClick={() => onFilterSystemChange(sys)}
               className={`px-2 py-0.5 rounded text-[11px] font-mono transition ${
                 filterSystem === sys
-                  ? 'bg-teal-500/20 text-teal-300 font-bold border border-teal-500/40'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-teal-500/20 text-teal-700 font-bold border border-teal-300'
+                  : 'text-slate-500 hover:text-slate-800'
               }`}
             >
               {sys}
@@ -75,12 +75,12 @@ export const GantryControls: React.FC<GantryControlsProps> = ({
       </div>
 
       {/* Primary & Secondary Sliders */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/60">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
         {/* Primary: RAO vs LAO */}
         <div className="space-y-1">
           <div className="flex justify-between items-center text-[11px]">
-            <span className="text-slate-400">Primary (RAO / LAO):</span>
-            <span className="font-mono font-bold text-teal-400 bg-teal-950/60 px-1.5 py-0.2 rounded border border-teal-800/60">
+            <span className="text-slate-500">Primary (RAO / LAO):</span>
+            <span className="font-mono font-bold text-teal-700 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
               {getPrimaryLabel(angles.primary)}
             </span>
           </div>
@@ -91,7 +91,7 @@ export const GantryControls: React.FC<GantryControlsProps> = ({
             step="1"
             value={angles.primary}
             onChange={e => handlePrimaryChange(parseInt(e.target.value, 10))}
-            className="w-full accent-teal-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+            className="w-full accent-teal-400 h-1.5 bg-slate-100 rounded-lg cursor-pointer"
           />
           <div className="flex justify-between text-[10px] text-slate-500 font-mono">
             <span>RAO 90°</span>
@@ -103,8 +103,8 @@ export const GantryControls: React.FC<GantryControlsProps> = ({
         {/* Secondary: Caudal vs Cranial */}
         <div className="space-y-1">
           <div className="flex justify-between items-center text-[11px]">
-            <span className="text-slate-400">Secondary (Cranial / Caudal):</span>
-            <span className="font-mono font-bold text-teal-400 bg-teal-950/60 px-1.5 py-0.2 rounded border border-teal-800/60">
+            <span className="text-slate-500">Secondary (Cranial / Caudal):</span>
+            <span className="font-mono font-bold text-teal-700 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
               {getSecondaryLabel(angles.secondary)}
             </span>
           </div>
@@ -115,7 +115,7 @@ export const GantryControls: React.FC<GantryControlsProps> = ({
             step="1"
             value={angles.secondary}
             onChange={e => handleSecondaryChange(parseInt(e.target.value, 10))}
-            className="w-full accent-teal-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+            className="w-full accent-teal-400 h-1.5 bg-slate-100 rounded-lg cursor-pointer"
           />
           <div className="flex justify-between text-[10px] text-slate-500 font-mono">
             <span>CAUD 50°</span>
@@ -127,8 +127,8 @@ export const GantryControls: React.FC<GantryControlsProps> = ({
 
       {/* Standard Cath Lab Preset Pills */}
       <div className="space-y-1.5">
-        <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center space-x-1">
-          <Compass className="w-3 h-3 text-teal-400" />
+        <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center space-x-1">
+          <Compass className="w-3 h-3 text-teal-700" />
           <span>Standard Clinical Views</span>
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -140,15 +140,15 @@ export const GantryControls: React.FC<GantryControlsProps> = ({
                 onClick={() => onSelectPreset(preset)}
                 className={`px-2.5 py-1.5 rounded-lg border text-left transition flex items-center space-x-1.5 ${
                   isSelected
-                    ? 'bg-teal-500/20 border-teal-500 text-teal-200 font-medium shadow-sm'
-                    : 'bg-slate-900/80 hover:bg-slate-800/80 border-slate-800 text-slate-300'
+                    ? 'bg-teal-500/20 border-teal-500 text-teal-800 font-medium shadow-sm'
+                    : 'bg-white/80 hover:bg-slate-100/80 border-slate-200 text-slate-700'
                 }`}
               >
                 <div>
                   <div className="font-mono font-bold text-[11px]">{preset.shorthand}</div>
-                  <div className="text-[10px] text-slate-400 leading-tight">{preset.name}</div>
+                  <div className="text-[10px] text-slate-500 leading-tight">{preset.name}</div>
                 </div>
-                {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-teal-400 shrink-0 ml-1" />}
+                {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-teal-700 shrink-0 ml-1" />}
               </button>
             );
           })}
@@ -157,19 +157,19 @@ export const GantryControls: React.FC<GantryControlsProps> = ({
 
       {/* Dynamic Clinical Rationale Card */}
       {activePreset && (
-        <div className="bg-slate-900/90 border border-teal-500/30 rounded-lg p-2.5 space-y-1.5 shadow-md">
-          <div className="flex items-center space-x-1.5 text-teal-300 font-semibold text-xs">
-            <Info className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+        <div className="bg-white/90 border border-teal-500/30 rounded-lg p-2.5 space-y-1.5 shadow-md">
+          <div className="flex items-center space-x-1.5 text-teal-700 font-semibold text-xs">
+            <Info className="w-3.5 h-3.5 text-teal-700 shrink-0" />
             <span>Clinical Utility: {activePreset.bestFor}</span>
           </div>
-          <p className="text-[11px] text-slate-300 leading-relaxed">
+          <p className="text-[11px] text-slate-700 leading-relaxed">
             {activePreset.clinicalRationale}
           </p>
-          <div className="space-y-0.5 pt-1 border-t border-slate-800">
-            <span className="text-[10px] text-slate-400 font-semibold uppercase">Orientation Clues:</span>
-            <ul className="text-[10px] text-slate-400 list-disc list-inside space-y-0.5">
+          <div className="space-y-0.5 pt-1 border-t border-slate-200">
+            <span className="text-[10px] text-slate-500 font-semibold uppercase">Orientation Clues:</span>
+            <ul className="text-[10px] text-slate-500 list-disc list-inside space-y-0.5">
               {activePreset.keyLandmarks.map((lm, idx) => (
-                <li key={idx}><span className="text-slate-300">{lm}</span></li>
+                <li key={idx}><span className="text-slate-700">{lm}</span></li>
               ))}
             </ul>
           </div>
