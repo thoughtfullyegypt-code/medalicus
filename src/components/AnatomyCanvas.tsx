@@ -113,11 +113,11 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
     const height = Math.max(containerRef.current.clientHeight, 240);
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0f18);
+    scene.background = new THREE.Color(0xf6f8fb);
     sceneRef.current = scene;
 
     // Grid Floor
-    const grid = new THREE.GridHelper(14, 28, 0x1e293b, 0x0f172a);
+    const grid = new THREE.GridHelper(14, 28, 0xdbe2ea, 0xeef1f5);
     grid.position.y = -3.8;
     scene.add(grid);
 
@@ -134,11 +134,11 @@ export const AnatomyCanvas: React.FC<AnatomyCanvasProps> = ({
     dirLight1.position.set(6, 12, 8);
     scene.add(dirLight1);
 
-    const dirLight2 = new THREE.DirectionalLight(0x0284c7, 0.65);
+    const dirLight2 = new THREE.DirectionalLight(0x597d9a, 0.4);
     dirLight2.position.set(-6, -4, -6);
     scene.add(dirLight2);
 
-    const backLight = new THREE.DirectionalLight(0x38bdf8, 0.45);
+    const backLight = new THREE.DirectionalLight(0xc6d6e5, 0.3);
     backLight.position.set(0, 8, -8);
     scene.add(backLight);
 
