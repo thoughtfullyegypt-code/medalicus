@@ -58,91 +58,77 @@ const SYSTEM_CONFIGS: Record<OrganSystemId, SystemConfig> = {
     ]
   },
   neurology: {
-    title: 'Neuro-Anatomy & Head CT Controls',
-    bodyLabel: 'Head & Scalp (Skin Envelope)',
-    organLabel: 'Brain Cortex Opacity',
+    title: 'Brain & Cranial Skeleton Atlas',
+    bodyLabel: 'Body Skin Envelope',
+    organLabel: 'Brain Tissue Opacity',
     layers: [
-      { key: 'cortex', label: 'Cerebral Cortex', defaultOn: true },
-      { key: 'ventricles', label: 'Lateral Ventricles', defaultOn: true },
-      { key: 'circleOfWillis', label: 'Circle of Willis', defaultOn: true },
-      { key: 'skull', label: 'Skull & Calvarium', defaultOn: true },
-      { key: 'slicingPlane', label: 'CT Slicing Plane', defaultOn: true }
+      { key: 'cortex', label: 'Brain (Real Atlas)', defaultOn: true },
+      { key: 'skull', label: 'Skull & Cranial Bones', defaultOn: true }
     ],
     presets: [
-      { label: 'Axial CT', preset: 'axial' },
-      { label: 'Coronal', preset: 'coronal' },
-      { label: 'Sagittal', preset: 'sagittal' },
-      { label: '3D Willis', preset: '3d' }
+      { label: 'Axial View', preset: 'axial' },
+      { label: 'Coronal View', preset: 'coronal' },
+      { label: 'Sagittal View', preset: 'sagittal' },
+      { label: '3D Brain', preset: '3d' }
     ]
   },
   pulmonology: {
-    title: 'Thoracic & Pulmonary Layer Controls',
-    bodyLabel: 'Thoracic Wall (Skin Envelope)',
+    title: 'Lung & Thoracic Skeleton Atlas',
+    bodyLabel: 'Body Skin Envelope',
     organLabel: 'Lung Tissue Opacity',
     layers: [
-      { key: 'airways', label: 'Tracheobronchial Tree', defaultOn: true },
-      { key: 'lungs', label: 'Lung Lobes (5 Lobes)', defaultOn: true },
-      { key: 'pulmArteries', label: 'Pulmonary Vessels', defaultOn: true },
-      { key: 'skeleton', label: 'Spine & Ribs', defaultOn: true },
-      { key: 'slicingPlane', label: 'Chest CT Plane', defaultOn: true }
+      { key: 'lungs', label: 'Lungs (Real Atlas)', defaultOn: true },
+      { key: 'skeleton', label: 'Ribs & Thoracic Spine', defaultOn: true }
     ],
     presets: [
-      { label: 'Axial Chest', preset: 'axial' },
-      { label: 'Coronal Scout', preset: 'coronal' },
-      { label: 'Sagittal', preset: 'sagittal' },
-      { label: '3D Airway', preset: '3d' }
+      { label: 'Axial View', preset: 'axial' },
+      { label: 'Coronal View', preset: 'coronal' },
+      { label: 'Sagittal View', preset: 'sagittal' },
+      { label: '3D Lungs', preset: '3d' }
     ]
   },
   gastroenterology: {
-    title: 'Hepato-Biliary & Laparoscopy Controls',
-    bodyLabel: 'Abdominal Wall (Skin Envelope)',
-    organLabel: 'Liver Parenchyma Opacity',
+    title: 'Digestive Organ Atlas',
+    bodyLabel: 'Body Skin Envelope',
+    organLabel: 'Digestive Organ Opacity',
     layers: [
-      { key: 'liver', label: 'Liver Couinaud Lobes', defaultOn: true },
-      { key: 'biliary', label: 'Gallbladder & CBD', defaultOn: true },
-      { key: 'skeleton', label: 'Spine & Ribs', defaultOn: true },
-      { key: 'slicingPlane', label: 'Laparoscopic Plane', defaultOn: true }
+      { key: 'liver', label: 'Liver, Stomach & Intestines', defaultOn: true },
+      { key: 'skeleton', label: 'Ribs & Spine', defaultOn: true }
     ],
     presets: [
-      { label: 'Laparoscopy', preset: '3d' },
-      { label: 'Coronal Liver', preset: 'coronal' },
-      { label: 'Axial CT', preset: 'axial' },
-      { label: 'Right Lateral', preset: 'sagittal' }
+      { label: '3D Digestive Organs', preset: '3d' },
+      { label: 'Coronal View', preset: 'coronal' },
+      { label: 'Axial View', preset: 'axial' },
+      { label: 'Side View', preset: 'sagittal' }
     ]
   },
   nephrology: {
-    title: 'Nephro-Urology Anatomy & MPR Controls',
-    bodyLabel: 'Patient Abdomen (Skin Envelope)',
-    organLabel: 'Renal Parenchyma Opacity',
+    title: 'Renal Organ & Pelvic Bone Atlas',
+    bodyLabel: 'Body Skin Envelope',
+    organLabel: 'Kidney Tissue Opacity',
     layers: [
-      { key: 'kidneys', label: 'Bilateral Kidneys', defaultOn: true },
-      { key: 'vasculature', label: 'Renal Arteries & IVC', defaultOn: true },
-      { key: 'ureters', label: 'Ureters & Bladder', defaultOn: true },
-      { key: 'prostate', label: 'Prostate (PZ/TZ)', defaultOn: true },
-      { key: 'skeleton', label: 'Lumbar Spine & Pelvis', defaultOn: true },
-      { key: 'slicingPlane', label: 'Axial MPR Plane', defaultOn: true }
+      { key: 'kidneys', label: 'Kidneys (Real Atlas)', defaultOn: true },
+      { key: 'skeleton', label: 'Lumbar Spine & Pelvis', defaultOn: true }
     ],
     presets: [
-      { label: 'Coronal Kidneys', preset: 'coronal' },
-      { label: 'Axial Prostate', preset: 'axial' },
-      { label: 'Sagittal Spine', preset: 'sagittal' },
-      { label: '3D Oblique', preset: '3d' }
+      { label: 'Front View', preset: 'coronal' },
+      { label: 'Axial View', preset: 'axial' },
+      { label: 'Side View', preset: 'sagittal' },
+      { label: '3D Kidneys', preset: '3d' }
     ]
   },
   musculoskeletal: {
-    title: 'Knee Joint & MSK Ligament Controls',
-    bodyLabel: 'Soft Tissue (Skin Envelope)',
-    organLabel: 'Bone & Cartilage Opacity',
+    title: 'Full Skeleton Anatomy Atlas',
+    bodyLabel: 'Body Skin Envelope',
+    organLabel: 'Skeleton Opacity',
     layers: [
-      { key: 'bones', label: 'Femur & Tibia Bones', defaultOn: true },
-      { key: 'ligaments', label: 'Cruciate Ligaments (ACL/PCL)', defaultOn: true },
-      { key: 'slicingPlane', label: 'Sagittal MRI Plane', defaultOn: true }
+      { key: 'bones', label: 'Detailed Skeleton (Real Mesh)', defaultOn: true }
     ],
     presets: [
-      { label: 'Sagittal MRI', preset: 'sagittal' },
-      { label: 'Coronal Scout', preset: 'coronal' },
-      { label: 'Axial Patella', preset: 'axial' },
-      { label: '3D Joint', preset: '3d' }
+      { label: 'Side View', preset: 'sagittal' },
+      { label: 'Front View', preset: 'coronal' },
+      { label: 'Axial View', preset: 'axial' },
+      { label: '3D Skeleton', preset: '3d' }
     ]
   },
   obstetrics: {
